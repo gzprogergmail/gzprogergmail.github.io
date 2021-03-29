@@ -17,7 +17,7 @@
     async function RunTimer(hours, minutes, seconds) {
         $("#countdown")[0].innerText = "";
         while (!isCancelled && (hours > 0 || minutes > 0 || seconds > 0)) {
-            const displayString = hours + ":" + minutes + ":" + seconds;
+            const displayString = getNumberString(hours) + ":" + getNumberString(minutes) + ":" + getNumberString(seconds);
             $("#countdown")[0].innerText = displayString;
             await ResolveAfterOneSecond();
             if (seconds > 0) {
@@ -68,6 +68,13 @@
         }
     }
 
+    function getNumberString(number) {
+        let s = number.toString();
+        if (s.length === 1) {
+            s = "0" + s;
+        }
+        return s;
+    }
     $("document").ready(() => {
         const startButton = $("#start");
         startButton.click(async () => {
@@ -160,7 +167,7 @@
         <div class="commandbar">
             <input id="start" class="commandButton" type="button" value="Start"></input>
             <input id="stop" class="commandButton" type="button" value="Stop"></input>
-            <label> Select Ending Sound </label>
+            <label> Select Sound </label>
             <select id="soundToPlay">
                 <option value="Bird.mp3"> Bird
                 </option>
