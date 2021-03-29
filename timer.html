@@ -42,7 +42,7 @@
         }
         if (!isCancelled) {
             $("#countdown")[0].innerText = "Time is up!!";
-            playsound("Plunger.mp3");
+            playsound("sounds/" + $("#soundToPlay")[0].value);
         }
         isCancelled = false;
     }
@@ -61,7 +61,7 @@
 
     function stopSound() {
         if (soundhandler) {
-           soundhandler.Stop();
+            soundhandler.pause();
         }
     }
 
@@ -94,11 +94,17 @@
         border-style: groove;
         border-width: 10px;
         width: 350px;
+        margin-bottom: 20px;
     }
 
     div.container {
         width: 800px;
         font-size: 1.5em;
+        background-image: linear-gradient(to right, rgba(255, 220, 220, 1), rgba(255, 250, 250, 1));
+        ;
+        border-style: groove;
+        border-color: gold;
+        border-width: 5px;
     }
 
     div.commandbar {
@@ -129,7 +135,6 @@
     }
 
     input.time {
-        cursor: pointer;
         border: 1px solid #3498db;
         background-color: transparent;
         height: 30px;
@@ -138,7 +143,6 @@
         font-size: 1.0em;
         box-shadow: 0 3px 3px rgba(0, 0, 0, 0.6);
     }
-
 </style>
 
 <body>
@@ -147,12 +151,33 @@
         <span>Hours</span>
         <input id="hours" class="time" value="0"></input>
         <span>Minutes</span>
-        <input id="minutes" class="time"  value="0"></input>
+        <input id="minutes" class="time" value="0"></input>
         <span>Seconds</span>
-        <input id="seconds" class="time"  value="0"></input>
+        <input id="seconds" class="time" value="0"></input>
         <div class="commandbar">
             <input id="start" class="commandButton" type="button" value="Start"></input>
             <input id="stop" class="commandButton" type="button" value="Stop"></input>
+            <label> Select Sound </label>
+            <select id="soundToPlay">
+                <option value="Bird.mp3"> Bird
+                </option>
+                <option value="DogCheek.mp3"> Dog Cheek
+                </option>
+                <option value="Plunger.mp3"> Plunge
+                </option>
+                <option value="bikebell.mp3"> Bike Bell
+                </option>
+                <option value="firecracker.mp3"> Fire Cracker
+                </option>
+                <option value="gunfire.mp3"> Gun Fire
+                </option>
+                <option value="machinegun.mp3"> Machine Gun
+                </option>
+                <option value="mower.mp3"> mower
+                </option>
+                <option value="schoolbell.mpg"> School Bell
+                </option>
+            </select>
         </div>
         <hr>
         </hr>
