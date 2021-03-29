@@ -47,9 +47,10 @@
         isCancelled = false;
     }
 
-    function cancelTimer() {
+    function cancelAll() {
         isCancelled = true;
         clearTimeout(cancelHandler);
+        stopSound();
         isCancelled = false;
     }
 
@@ -68,17 +69,16 @@
     $("document").ready(() => {
         const startButton = $("#start");
         startButton.click(async () => {
-            const hours = parseInt($("#hours")[0].value);
-            const minutes = parseInt($("#minutes")[0].value);
-            const seconds = parseInt($("#seconds")[0].value);
-            cancelTimer();
+            const hours = parseInt($("#hours")[0].value) || 0;
+            const minutes = parseInt($("#minutes")[0].value) || 0;
+            const seconds = parseInt($("#seconds")[0].value) || 0;
+            cancelAll();
             await RunTimer(hours, minutes, seconds);
         });
 
         const stopButton = $("#stop");
         stopButton.click(() => {
-            cancelTimer();
-            stopSound();
+            cancelAll();
         });
     });
 
@@ -176,6 +176,8 @@
                 <option value="mower.mp3"> Mower
                 </option>
                 <option value="schoolbell.mp3"> School Bell
+                </option>
+                <option value="hiccup.wav"> Hiccup
                 </option>
             </select>
         </div>
