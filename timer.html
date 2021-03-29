@@ -54,7 +54,7 @@
     }
 
     let soundhandler;
-    function playsound(soundUrl) {
+    async function playsound(soundUrl) {
         soundhandler = new Audio(soundUrl);
         soundhandler.play();
     }
@@ -173,9 +173,9 @@
                 </option>
                 <option value="machinegun.mp3"> Machine Gun
                 </option>
-                <option value="mower.mp3"> mower
+                <option value="mower.mp3"> Mower
                 </option>
-                <option value="schoolbell.mpg"> School Bell
+                <option value="schoolbell.mp3"> School Bell
                 </option>
             </select>
         </div>
