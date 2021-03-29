@@ -1,0 +1,161 @@
+<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+    crossorigin="anonymous">
+    </script>
+
+<script>
+    let cancelHandler;
+    let isCancelled = false;
+
+    async function ResolveAfterOneSecond() {
+        return new Promise((resolve, reject) => {
+            cancelHandler = setTimeout(() => {
+                resolve();
+            }, 1000);
+        });
+    }
+
+    async function RunTimer(hours, minutes, seconds) {
+        $("#countdown")[0].innerText = "";
+        while (!isCancelled && (hours > 0 || minutes > 0 || seconds > 0)) {
+            const displayString = hours + ":" + minutes + ":" + seconds;
+            $("#countdown")[0].innerText = displayString;
+            await ResolveAfterOneSecond();
+            if (seconds > 0) {
+                seconds--;
+            } else {
+                // seconds === 0
+                if (minutes > 0) {
+                    minutes--;
+                    seconds += 59;
+                } else {
+                    // seconds === 0, minutes === 0;
+                    if (hours > 0) {
+                        hours--;
+                        minutes = 59;
+                        seconds = 59;
+                    } else {
+                        // done
+                        break;
+                    }
+                }
+            }
+        }
+        if (!isCancelled) {
+            $("#countdown")[0].innerText = "Time is up!!";
+            playsound("Plunger.mp3");
+        }
+        isCancelled = false;
+    }
+
+    function cancelTimer() {
+        isCancelled = true;
+        clearTimeout(cancelHandler);
+        isCancelled = false;
+    }
+
+    let soundhandler;
+    function playsound(soundUrl) {
+        soundhandler = new Audio(soundUrl);
+        soundhandler.play();
+    }
+
+    function stopSound() {
+        soundhandler.Stop();
+    }
+
+    $("document").ready(() => {
+        const startButton = $("#start");
+        startButton.click(async () => {
+            const hours = parseInt($("#hours")[0].value);
+            const minutes = parseInt($("#minutes")[0].value);
+            const seconds = parseInt($("#seconds")[0].value);
+            cancelTimer();
+            await RunTimer(hours, minutes, seconds);
+        });
+
+        const stopButton = $("#stop");
+        stopButton.click(() => {
+            cancelTimer();
+            stopSound();
+        });
+    });
+
+
+</script>
+<html>
+<style>
+    div.countdown {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1.5em;
+        text-align: center;
+        border-color: coral;
+        border-style: groove;
+        border-width: 10px;
+        width: 350px;
+    }
+
+    div.container {
+        width: 800px;
+        font-size: 1.5em;
+    }
+
+    div.commandbar {
+        padding-top: 30px;
+        padding-bottom: 30px;
+    }
+
+    input.commandButton {
+        cursor: pointer;
+        border: 1px solid #3498db;
+        background-color: transparent;
+        height: 50px;
+        width: 150px;
+        color: #3498db;
+        font-size: 0.8em;
+        box-shadow: 0 3px 3px rgba(0, 0, 0, 0.6);
+    }
+
+    input.commandButton:hover {
+        box-shadow: 0 9px 9px rgba(0, 0, 0, 0.6);
+        border: 2px solid #3498db;
+    }
+
+    input.commandButton:active {
+        box-shadow: 0 3px 3px rgba(0, 0, 0, 0.6);
+        transform: translateY(2px);
+        background-color: lightblue;
+    }
+
+    input.time {
+        cursor: pointer;
+        border: 1px solid #3498db;
+        background-color: transparent;
+        height: 30px;
+        width: 100px;
+        color: #3498db;
+        font-size: 1.0em;
+        box-shadow: 0 3px 3px rgba(0, 0, 0, 0.6);
+    }
+
+</style>
+
+<body>
+    <div class="container">
+        <h1>Countdown Timer</h1>
+        <span>Hours</span>
+        <input id="hours" class="time" value="0"></input>
+        <span>Minutes</span>
+        <input id="minutes" class="time"  value="0"></input>
+        <span>Seconds</span>
+        <input id="seconds" class="time"  value="0"></input>
+        <div class="commandbar">
+            <input id="start" class="commandButton" type="button" value="Start"></input>
+            <input id="stop" class="commandButton" type="button" value="Stop"></input>
+        </div>
+        <hr>
+        </hr>
+        <div id="countdown" class="countdown">0:0:0</div>
+    </div>
+</body>
+
+</html>
