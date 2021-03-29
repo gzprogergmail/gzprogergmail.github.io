@@ -42,9 +42,11 @@
         }
         if (!isCancelled) {
             $("#countdown")[0].innerText = "Time is up!!";
-            playsound("sounds/" + $("#soundToPlay")[0].value);
+            await playsound("sounds/" + $("#soundToPlay")[0].value);
+        } else {
+            isCancelled = false;
         }
-        isCancelled = false;
+
     }
 
     function cancelAll() {
@@ -85,6 +87,7 @@
 
 </script>
 <html>
+<title>Count down timer</title>
 <style>
     div.countdown {
         font-family: 'Courier New', Courier, monospace;
@@ -100,7 +103,7 @@
     div.container {
         width: 800px;
         font-size: 1.5em;
-        background-image: linear-gradient(to right, rgba(255, 220, 220, 1), rgba(255, 250, 250, 1));
+        background-image: linear-gradient(to right, rgba(220, 225, 225, 1), rgba(220, 250, 250, 1));
         ;
         border-style: groove;
         border-color: gold;
@@ -157,7 +160,7 @@
         <div class="commandbar">
             <input id="start" class="commandButton" type="button" value="Start"></input>
             <input id="stop" class="commandButton" type="button" value="Stop"></input>
-            <label> Select Sound </label>
+            <label> Select Ending Sound </label>
             <select id="soundToPlay">
                 <option value="Bird.mp3"> Bird
                 </option>
@@ -178,6 +181,22 @@
                 <option value="schoolbell.mp3"> School Bell
                 </option>
                 <option value="hiccup.wav"> Hiccup
+                </option>
+                <option value="metalstrike.mp3"> Metal Strike
+                </option>
+                <option value="bullethitdiffobj.mp3"> Bullet Hit Different Object
+                </option>
+                <option value="anthemdrummingandfluteplaying.mp3"> Anthem Drumming and Flute Playing
+                </option>
+                <option value="communicationsignalinsideaspaceship.mp3"> communication signal insidea space ship
+                </option>
+                <option value="guitartuning.mp3"> Guitar Tuning
+                </option>
+                <option value="dronealertsignalonaspaceship.mp3"> Drone Alert Signal on a Spaceship
+                </option>
+                <option value="spacecraftenginejamming.mp3"> Space Craft Engine Jamming
+                </option>
+                <option value="spacecharging.mp3"> Space Charging
                 </option>
             </select>
         </div>
