@@ -60,7 +60,9 @@
     }
 
     function stopSound() {
-        soundhandler.Stop();
+        if (soundhandler) {
+           soundhandler.Stop();
+        }
     }
 
     $("document").ready(() => {
