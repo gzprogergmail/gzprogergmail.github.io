@@ -1,0 +1,216 @@
+<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+    crossorigin="anonymous">
+    </script>
+
+<script>
+    let cancelHandler;
+    let isCancelled = false;
+
+    async function ResolveAfterOneSecond() {
+        return new Promise((resolve, reject) => {
+            cancelHandler = setTimeout(() => {
+                resolve();
+            }, 1000);
+        });
+    }
+
+    async function RunTimer(hours, minutes, seconds) {
+        $("#countdown")[0].innerText = "";
+        while (!isCancelled && (hours > 0 || minutes > 0 || seconds > 0)) {
+            const displayString = getNumberString(hours) + ":" + getNumberString(minutes) + ":" + getNumberString(seconds);
+            $("#countdown")[0].innerText = displayString;
+            await ResolveAfterOneSecond();
+            if (seconds > 0) {
+                seconds--;
+            } else {
+                // seconds === 0
+                if (minutes > 0) {
+                    minutes--;
+                    seconds += 59;
+                } else {
+                    // seconds === 0, minutes === 0;
+                    if (hours > 0) {
+                        hours--;
+                        minutes = 59;
+                        seconds = 59;
+                    } else {
+                        // done
+                        break;
+                    }
+                }
+            }
+        }
+        if (!isCancelled) {
+            $("#countdown")[0].innerText = "Time is up!!";
+            await playsound("sounds/" + $("#soundToPlay")[0].value);
+        } else {
+            isCancelled = false;
+        }
+
+    }
+
+    function cancelAll() {
+        isCancelled = true;
+        clearTimeout(cancelHandler);
+        stopSound();
+        isCancelled = false;
+    }
+
+    let soundhandler;
+    async function playsound(soundUrl) {
+        soundhandler = new Audio(soundUrl);
+        soundhandler.play();
+    }
+
+    function stopSound() {
+        if (soundhandler) {
+            soundhandler.pause();
+        }
+    }
+
+    function getNumberString(number) {
+        let s = number.toString();
+        if (s.length === 1) {
+            s = "0" + s;
+        }
+        return s;
+    }
+    $("document").ready(() => {
+        const startButton = $("#start");
+        startButton.click(async () => {
+            const hours = parseInt($("#hours")[0].value) || 0;
+            const minutes = parseInt($("#minutes")[0].value) || 0;
+            const seconds = parseInt($("#seconds")[0].value) || 0;
+            cancelAll();
+            await RunTimer(hours, minutes, seconds);
+        });
+
+        const stopButton = $("#stop");
+        stopButton.click(() => {
+            cancelAll();
+        });
+    });
+
+
+</script>
+<html>
+<title>Count down timer</title>
+<style>
+    div.countdown {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1.5em;
+        text-align: center;
+        border-color: coral;
+        border-style: groove;
+        border-width: 10px;
+        width: 350px;
+        margin-bottom: 20px;
+    }
+
+    div.container {
+        width: 800px;
+        font-size: 1.5em;
+        background-image: linear-gradient(to right, rgba(220, 225, 225, 1), rgba(220, 250, 250, 1));
+        ;
+        border-style: groove;
+        border-color: gold;
+        border-width: 5px;
+    }
+
+    div.commandbar {
+        padding-top: 30px;
+        padding-bottom: 30px;
+    }
+
+    input.commandButton {
+        cursor: pointer;
+        border: 1px solid #3498db;
+        background-color: transparent;
+        height: 50px;
+        width: 150px;
+        color: #3498db;
+        font-size: 0.8em;
+        box-shadow: 0 3px 3px rgba(0, 0, 0, 0.6);
+    }
+
+    input.commandButton:hover {
+        box-shadow: 0 9px 9px rgba(0, 0, 0, 0.6);
+        border: 2px solid #3498db;
+    }
+
+    input.commandButton:active {
+        box-shadow: 0 3px 3px rgba(0, 0, 0, 0.6);
+        transform: translateY(2px);
+        background-color: lightblue;
+    }
+
+    input.time {
+        border: 1px solid #3498db;
+        background-color: transparent;
+        height: 30px;
+        width: 100px;
+        color: #3498db;
+        font-size: 1.0em;
+        box-shadow: 0 3px 3px rgba(0, 0, 0, 0.6);
+    }
+</style>
+
+<body>
+    <div class="container">
+        <h1>Countdown Timer</h1>
+        <span>Hours</span>
+        <input id="hours" class="time" value="0"></input>
+        <span>Minutes</span>
+        <input id="minutes" class="time" value="0"></input>
+        <span>Seconds</span>
+        <input id="seconds" class="time" value="0"></input>
+        <div class="commandbar">
+            <input id="start" class="commandButton" type="button" value="Start"></input>
+            <input id="stop" class="commandButton" type="button" value="Stop"></input>
+            <label> Select Sound </label>
+            <select id="soundToPlay">
+                <option value="Bird.mp3"> Bird
+                </option>
+                <option value="DogCheek.mp3"> Dog Cheek
+                </option>
+                <option value="Plunger.mp3"> Plunge
+                </option>
+                <option value="bikebell.mp3"> Bike Bell
+                </option>
+                <option value="firecracker.mp3"> Fire Cracker
+                </option>
+                <option value="gunfire.mp3"> Gun Fire
+                </option>
+                <option value="machinegun.mp3"> Machine Gun
+                </option>
+                <option value="mower.mp3"> Mower
+                </option>
+                <option value="schoolbell.mp3"> School Bell
+                </option>
+                <option value="hiccup.wav"> Hiccup
+                </option>
+                <option value="metalstrike.mp3"> Metal Strike
+                </option>
+                <option value="bullethitdiffobj.mp3"> Bullet Hit Different Object
+                </option>
+                <option value="anthemdrummingandfluteplaying.mp3"> Anthem Drumming and Flute Playing
+                </option>
+                <option value="communicationsignalinsideaspaceship.mp3"> communication signal insidea space ship
+                </option>
+                <option value="guitartuning.mp3"> Guitar Tuning
+                </option>
+                <option value="dronealertsignalonaspaceship.mp3"> Drone Alert Signal on a Spaceship
+                </option>
+                <option value="spacecraftenginejamming.mp3"> Space Craft Engine Jamming
+                </option>
+                <option value="spacecharging.mp3"> Space Charging
+                </option>
+            </select>
+        </div>
+        <hr>
+        </hr>
+        <div id="countdown" class="countdown">0:0:0</div>
+    </div>
+</body>
+
+</html>
