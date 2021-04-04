@@ -16,6 +16,7 @@
 
     async function RunTimer(hours, minutes, seconds) {
         $("#countdown")[0].innerText = "";
+        setRunningGuy();
         while (!isCancelled && (hours > 0 || minutes > 0 || seconds > 0)) {
             const displayString = getNumberString(hours) + ":" + getNumberString(minutes) + ":" + getNumberString(seconds);
             $("#countdown")[0].innerText = displayString;
@@ -46,13 +47,21 @@
         } else {
             isCancelled = false;
         }
-
+        setNotRunningYet();
     }
 
+    function setRunningGuy() {
+        $("#gif").attr("src", "runningguy.gif");
+    }
+
+    function setNotRunningYet() {
+        $("#gif").attr("src", "notrunningyet.gif");
+    }
     function cancelAll() {
         isCancelled = true;
         clearTimeout(cancelHandler);
         stopSound();
+        setNotRunningYet();
         isCancelled = false;
     }
 
@@ -210,7 +219,7 @@
         <hr>
         </hr>
         <div id="countdown" class="countdown">0:0:0</div>
-        <img src="runningguy.gif"></img>
+        <img id="gif" src="notrunningyet.gif"></img>
     </div>
 </body>
 
