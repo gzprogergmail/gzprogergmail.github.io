@@ -68,7 +68,10 @@
     let soundhandler;
     async function playsound(soundUrl) {
         soundhandler = new Audio(soundUrl);
-        soundhandler.play();
+        soundhandler.addEventListener("canplaythrough", event => {
+            /* the audio is now playable; play it if permissions allow */
+            soundhandler.play();
+        });
     }
 
     function stopSound() {
