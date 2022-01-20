@@ -82,7 +82,7 @@
             const minutes = parseInt($("#minutes")[0].value) || 0;
             const seconds = parseInt($("#seconds")[0].value) || 0;
             cancelAll();
-            await RunTimer(hours, minutes, seconds);
+            RunTimer(hours, minutes, seconds);
         });
 
         const stopButton = $("#stop");
