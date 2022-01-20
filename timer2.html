@@ -77,7 +77,7 @@
     }
     $("document").ready(() => {
         const startButton = $("#start");
-        startButton.click(async () => {
+        startButton.click(() => {
             const hours = parseInt($("#hours")[0].value) || 0;
             const minutes = parseInt($("#minutes")[0].value) || 0;
             const seconds = parseInt($("#seconds")[0].value) || 0;
