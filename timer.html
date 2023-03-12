@@ -14,6 +14,15 @@
         });
     }
 
+    function CalculatePiUpToNdigits(n) {
+        let pi = 0;
+        let sign = 1;
+        for (let i = 1; i < n; i += 2) {
+            pi += sign * (1 / i);
+            sign *= -1;
+        }
+        return pi * 4;
+    }
     async function RunTimer(hours, minutes, seconds) {
         $("#countdown")[0].innerText = "";
         setRunningGuy();
