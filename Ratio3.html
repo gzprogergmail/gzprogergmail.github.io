@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Touch-Friendly Image Uploader</title>
+    <style>
+        /* Existing styles... */
+
+        /* Additions for touch gestures */
+        .alignment-guide {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background-color: #ff4444;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <div class="upload-area" id="dropZone">
+            <p>Drop image or click to select</p>
+            <input type="file" id="fileInput" accept="image/*">
+            <button class="upload-button" onclick="fileInput.click()">Select Image</button>
+        </div>
+        
+        <div class="preview-container" id="previewContainer">
+            <img id="imagePreview" alt="Preview">
+            <div class="ruler" id="ruler">
+                <div class="ruler-slider" id="rulerSlider"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alignment-guide" id="topGuide"></div>
+    <div class="alignment-guide" id="bottomGuide"></div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const ruler = document.getElementById('ruler');
+        const slider = document.getElementById('rulerSlider');
+        const topGuide = document.getElementById('topGuide');
+        const bottomGuide = document.getElementById('bottomGuide');
+
+        // Touch gesture support for dragging guides
+        function setupTouchMove(element, onMove) {
+            let startY, startTop;
+
+            element.addEventListener('touchstart', (e) => {
+                const touch = e.touches[0];
+                startY = touch.clientY;
+                startTop = element.offsetTop;
+                e.preventDefault();
+            });
+
+            element.addEventListener('touchmove', (e) => {
+                const touch = e.touches[0];
+                const dy = touch.clientY - startY;
+                onMove(startTop + dy);
+                e.preventDefault();
+            });
+        }
+
+        setupTouchMove(topGuide, (newTop) => {
+            topGuide.style.top = `${Math.max(0, Math.min(newTop, bottomGuide.offsetTop - 20))}px`;
+        });
+
+        setupTouchMove(bottomGuide, (newTop) => {
+            bottomGuide.style.top = `${Math.max(topGuide.offsetTop + 20, newTop)}px`;
+        });
+
+        // Touch gesture for the slider
+        slider.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+        });
+
+        slider.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            const rulerRect = ruler.getBoundingClientRect();
+            const newTop = Math.max(0, Math.min(rulerRect.height, touch.clientY - rulerRect.top));
+            slider.style.top = `${newTop}px`;
+            e.preventDefault();
+        });
+
+        // File upload handling
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+
+        dropZone.addEventListener('drop', e => {
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            const file = files[0];
+            if (!file.type.startsWith('image/')) return alert('Please upload an image file.');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+                imagePreview.onload = setupRuler;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function setupRuler() {
+            ruler.style.display = 'block';
+            ruler.style.height = `${imagePreview.offsetHeight}px`;
+            ruler.style.left = `${imagePreview.offsetWidth + 20}px`;
+            ruler.style.top = '0px';
+
+            topGuide.style.top = '0px';
+            bottomGuide.style.top = `${imagePreview.offsetHeight}px`;
+            slider.style.top = `${imagePreview.offsetHeight / 2}px`;
+        }
+    </script>
+</body>
+</html>
