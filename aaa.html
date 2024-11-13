@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo Ruler Tool</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      margin: 0;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+    }
+
+    #upload-container {
+      margin-bottom: 10px;
+    }
+
+    #photo-container {
+      position: relative;
+      max-width: 100%;
+      max-height: 80vh;
+      overflow: hidden;
+      background-color: #fff;
+      border: 2px solid #ddd;
+      display: none;
+    }
+
+    #ruler {
+      position: absolute;
+      width: 40px;
+      top: 10px;
+      bottom: 10px;
+      background: #eaeaea;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      touch-action: none;
+    }
+
+    .mark {
+      width: 10px;
+      height: 2px;
+      background-color: #333;
+      margin: 2px 0;
+    }
+
+    .big-mark {
+      width: 20px;
+      height: 2px;
+      background-color: #333;
+    }
+
+    .label {
+      font-size: 10px;
+      color: #333;
+    }
+
+    #slider {
+      width: 30px;
+      height: 10px;
+      background-color: rgba(255, 0, 0, 0.7);
+      position: absolute;
+      left: 5px;
+      touch-action: none;
+    }
+
+    .guideline {
+      position: absolute;
+      height: 2px;
+      width: 50%;
+      background-color: rgba(0, 0, 255, 0.3);
+    }
+
+    #guideline-top, #guideline-bottom {
+      width: 50%;
+      height: 2px;
+      background-color: rgba(0, 0, 255, 0.3);
+      position: absolute;
+    }
+
+    #grip-top, #grip-bottom {
+      width: 100%;
+      height: 10px;
+      background-color: #333;
+      cursor: ns-resize;
+    }
+  </style>
+</head>
+<body>
+
+<div id="upload-container">
+  <input type="file" id="photo-upload" accept="image/*">
+</div>
+
+<div id="photo-container">
+  <img id="photo" alt="Uploaded Photo" />
+  <div id="ruler">
+    <div id="grip-top" class="grip"></div>
+    <div id="guideline-top" class="guideline"></div>
+    
+    <div id="slider"></div>
+    
+    <div id="guideline-bottom" class="guideline"></div>
+    <div id="grip-bottom" class="grip"></div>
+
+    <div class="mark big-mark"></div>
+    <div class="label">0</div>
+    
+    <!-- Add more marks and labels as needed -->
+
+  </div>
+</div>
+
+<script>
+  // Handle photo upload and display
+  const photoUpload = document.getElementById('photo-upload');
+  const photoContainer = document.getElementById('photo-container');
+  const photo = document.getElementById('photo');
+
+  photoUpload.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        photo.src = e.target.result;
+        photoContainer.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Ruler movement handling
+  const ruler = document.getElementById('ruler');
+  let isDraggingRuler = false;
+  let rulerStartY = 0;
+  let rulerOffsetY = 0;
+
+  ruler.addEventListener('touchstart', (e) => {
+    isDraggingRuler = true;
+    rulerStartY = e.touches[0].clientY - rulerOffsetY;
+  });
+
+  ruler.addEventListener('touchmove', (e) => {
+    if (isDraggingRuler) {
+      rulerOffsetY = e.touches[0].clientY - rulerStartY;
+      ruler.style.transform = `translateY(${rulerOffsetY}px)`;
+    }
+  });
+
+  ruler.addEventListener('touchend', () => {
+    isDraggingRuler = false;
+  });
+
+  // Slider handling
+  const slider = document.getElementById('slider');
+  let isDraggingSlider = false;
+  let sliderStartY = 0;
+  let sliderOffsetY = 0;
+
+  slider.addEventListener('touchstart', (e) => {
+    isDraggingSlider = true;
+    sliderStartY = e.touches[0].clientY - sliderOffsetY;
+  });
+
+  slider.addEventListener('touchmove', (e) => {
+    if (isDraggingSlider) {
+      sliderOffsetY = e.touches[0].clientY - sliderStartY;
+      slider.style.top = `${sliderOffsetY}px`;
+    }
+  });
+
+  slider.addEventListener('touchend', () => {
+    isDraggingSlider = false;
+  });
+
+  // Grip scaling handling
+  const gripTop = document.getElementById('grip-top');
+  const gripBottom = document.getElementById('grip-bottom');
+  let isScalingTop = false;
+  let isScalingBottom = false;
+  let scaleStartY = 0;
+  let scaleHeight = 0;
+
+  gripTop.addEventListener('touchstart', (e) => {
+    isScalingTop = true;
+    scaleStartY = e.touches[0].clientY;
+    scaleHeight = ruler.offsetHeight;
+  });
+
+  gripTop.addEventListener('touchmove', (e) => {
+    if (isScalingTop) {
+      let newHeight = scaleHeight + (scaleStartY - e.touches[0].clientY);
+      ruler.style.height = `${newHeight}px`;
+    }
+  });
+
+  gripTop.addEventListener('touchend', () => {
+    isScalingTop = false;
+  });
+
+  gripBottom.addEventListener('touchstart', (e) => {
+    isScalingBottom = true;
+    scaleStartY = e.touches[0].clientY;
+    scaleHeight = ruler.offsetHeight;
+  });
+
+  gripBottom.addEventListener('touchmove', (e) => {
+    if (isScalingBottom) {
+      let newHeight = scaleHeight + (e.touches[0].clientY - scaleStartY);
+      ruler.style.height = `${newHeight}px`;
+    }
+  });
+
+  gripBottom.addEventListener('touchend', () => {
+    isScalingBottom = false;
+  });
+</script>
+
+</body>
+</html>
