@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Uploader</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .upload-container {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area p {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+        }
+
+        .upload-area:hover {
+            border-color: #666;
+            background-color: #f8f8f8;
+        }
+
+        .preview-container {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 0.5rem;
+            position: relative;
+        }
+
+        #imagePreview {
+            max-width: calc(100% - 60px);
+            border-radius: 4px;
+            display: none;
+        }
+
+        .ruler {
+            width: 40px;
+            position: absolute;
+            display: none;
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: move;
+            user-select: none;
+        }
+
+        .ruler-resize-handle {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 10px;
+            cursor: ns-resize;
+        }
+
+        .ruler-resize-handle.top {
+            top: 0;
+        }
+
+        .ruler-resize-handle.bottom {
+            bottom: 0;
+        }
+
+        .ruler-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background-color: #666;
+        }
+
+        .ruler-text {
+            position: absolute;
+            right: 45px;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: #666;
+        }
+
+        .ruler-mark {
+            position: absolute;
+            left: 0;
+            width: 8px;
+            height: 1px;
+            background-color: #666;
+        }
+
+        .ruler-slider {
+            position: absolute;
+            height: 2px;
+            background-color: rgba(76, 175, 80, 0.3);
+            transform: translateY(-50%);
+            cursor: ns-resize;
+            z-index: 10;
+            left: -266px;
+            width: 300px;
+        }
+
+        .alignment-guide {
+            position: fixed;
+            height: 1px;
+            background-color: #ff4444;
+            pointer-events: none;
+            display: none;
+            z-index: 1000;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 0.25rem;
+        }
+
+        .upload-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <div class="upload-area" id="dropZone">
+            <p>Drop image or click to select</p>
+            <input type="file" id="fileInput" accept="image/*">
+            <button class="upload-button" onclick="document.getElementById('fileInput').click()">Select Image</button>
+        </div>
+        
+        <div class="preview-container" id="previewContainer">
+            <img id="imagePreview" alt="Preview">
+            <div class="ruler" id="ruler">
+                <div class="ruler-resize-handle top"></div>
+                <div class="ruler-resize-handle bottom"></div>
+                <div class="ruler-slider" id="rulerSlider"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alignment-guide" id="topGuide"></div>
+    <div class="alignment-guide" id="bottomGuide"></div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const ruler = document.getElementById('ruler');
+        const slider = document.getElementById('rulerSlider');
+        const topGuide = document.getElementById('topGuide');
+        const bottomGuide = document.getElementById('bottomGuide');
+        const previewContainer = document.getElementById('previewContainer');
+
+        let isDraggingRuler = false;
+        let isResizing = false;
+        let isDraggingSlider = false;
+        let resizeHandle = null;
+        let startX, startY, startLeft, startTop, startHeight;
+        let containerRect;
+
+        function createRuler() {
+            ruler.querySelectorAll('.ruler-line, .ruler-text, .ruler-mark').forEach(el => el.remove());
+            
+            const height = ruler.offsetHeight;
+            const unitHeight = height / 100;
+
+            for (let i = 0; i <= 100; i += 10) {
+                const line = document.createElement('div');
+                line.className = 'ruler-line';
+                line.style.bottom = `${i * unitHeight}px`;
+                ruler.appendChild(line);
+
+                const text = document.createElement('div');
+                text.className = 'ruler-text';
+                text.textContent = (100 - i).toString();
+                text.style.bottom = `${i * unitHeight}px`;
+                ruler.appendChild(text);
+            }
+
+            for (let i = 0; i <= 100; i++) {
+                if (i % 10 !== 0) {
+                    const mark = document.createElement('div');
+                    mark.className = 'ruler-mark';
+                    mark.style.bottom = `${i * unitHeight}px`;
+                    ruler.appendChild(mark);
+                }
+            }
+        }
+
+        ruler.addEventListener('mousedown', e => {
+            if (e.target.classList.contains('ruler-resize-handle')) {
+                startResize(e);
+            } else if (e.target !== slider) {
+                startDraggingRuler(e);
+            }
+        });
+
+        function startDraggingRuler(e) {
+            if (e.target === slider) return;
+            isDraggingRuler = true;
+            containerRect = previewContainer.getBoundingClientRect();
+            const rulerRect = ruler.getBoundingClientRect();
+            
+            startX = e.clientX - rulerRect.left + containerRect.left;
+            startY = e.clientY - rulerRect.top + containerRect.top;
+            startLeft = rulerRect.left - containerRect.left;
+            startTop = rulerRect.top - containerRect.top;
+            
+            ruler.style.cursor = 'grabbing';
+        }
+
+        function startResize(e) {
+            isResizing = true;
+            resizeHandle = e.target;
+            startY = e.clientY;
+            startHeight = ruler.offsetHeight;
+            startTop = parseInt(ruler.style.top) || 0;
+
+            topGuide.style.display = 'block';
+            bottomGuide.style.display = 'block';
+            topGuide.style.width = bottomGuide.style.width = document.body.clientWidth + 'px';
+            updateGuidePositions(ruler.getBoundingClientRect());
+        }
+
+        function updateGuidePositions(rulerRect) {
+            topGuide.style.top = rulerRect.top + 'px';
+            bottomGuide.style.top = (rulerRect.top + rulerRect.height) + 'px';
+        }
+
+        document.addEventListener('mousemove', e => {
+            if (isDraggingRuler) {
+                const newLeft = e.clientX - startX;
+                const newTop = e.clientY - startY;
+                
+                // Calculate boundaries
+                const maxLeft = containerRect.width - ruler.offsetWidth;
+                const maxTop = containerRect.height - ruler.offsetHeight;
+                
+                // Constrain movement within container bounds
+                ruler.style.left = `${Math.max(0, Math.min(maxLeft, newLeft))}px`;
+                ruler.style.top = `${Math.max(0, Math.min(maxTop, newTop))}px`;
+                
+            } else if (isResizing) {
+                const dy = e.clientY - startY;
+                let newHeight, newTop;
+
+                if (resizeHandle.classList.contains('top')) {
+                    newHeight = startHeight - dy;
+                    newTop = startTop + dy;
+                } else {
+                    newHeight = startHeight + dy;
+                    newTop = startTop;
+                }
+
+                if (newHeight >= 100) {
+                    ruler.style.height = `${newHeight}px`;
+                    ruler.style.top = `${newTop}px`;
+                    createRuler();
+                    updateGuidePositions(ruler.getBoundingClientRect());
+                }
+            } else if (isDraggingSlider) {
+                const rulerRect = ruler.getBoundingClientRect();
+                const newTop = Math.max(0, Math.min(rulerRect.height, e.clientY - rulerRect.top));
+                slider.style.top = `${newTop}px`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDraggingRuler = false;
+            isResizing = false;
+            isDraggingSlider = false;
+            ruler.style.cursor = 'move';
+            topGuide.style.display = 'none';
+            bottomGuide.style.display = 'none';
+        });
+
+        slider.addEventListener('mousedown', e => {
+            e.stopPropagation();
+            isDraggingSlider = true;
+        });
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, e => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+
+        dropZone.addEventListener('drop', e => {
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            
+            const file = files[0];
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+                
+                imagePreview.onload = function() {
+                    ruler.style.display = 'block';
+                    ruler.style.height = `${imagePreview.offsetHeight}px`;
+                    ruler.style.position = 'absolute';
+                    ruler.style.left = `${imagePreview.offsetWidth + 20}px`;
+                    ruler.style.top = '0px';
+                    createRuler();
+                    
+                    slider.style.top = `${imagePreview.offsetHeight / 2}px`;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
