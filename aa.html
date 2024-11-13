@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photo and Ruler Interface</title>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    touch-action: none;
+  }
+  #container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+  }
+  #photo {
+    position: absolute;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    object-fit: contain;
+    background-color: #f0f0f0;
+  }
+  #rulerContainer {
+    position: absolute;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    touch-action: none;
+  }
+  #ruler {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 300px;
+    background: linear-gradient(to top, #fff 0%, #fff 100%);
+    border-left: 1px solid #000;
+    border-right: 1px solid #000;
+    touch-action: none;
+  }
+  .mark {
+    position: absolute;
+    left: 0;
+    height: 1px;
+    background: #000;
+  }
+  .smallMark {
+    width: 10px;
+  }
+  .bigMark {
+    width: 20px;
+  }
+  .label {
+    position: absolute;
+    left: 25px;
+    font-size: 12px;
+  }
+  #slider {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    background: rgba(0, 0,
