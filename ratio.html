@@ -124,7 +124,7 @@
             height: 1px;
             background-color: #ff4444;
             pointer-events: none;
-            display: none;
+            display: block;
             z-index: 1000;
         }
 
@@ -244,8 +244,6 @@
             startHeight = ruler.offsetHeight;
             startTop = parseInt(ruler.style.top) || 0;
 
-            topGuide.style.display = 'block';
-            bottomGuide.style.display = 'block';
             topGuide.style.width = bottomGuide.style.width = document.body.clientWidth + 'px';
             updateGuidePositions(ruler.getBoundingClientRect());
         }
@@ -298,8 +296,6 @@
             isResizing = false;
             isDraggingSlider = false;
             ruler.style.cursor = 'move';
-            topGuide.style.display = 'none';
-            bottomGuide.style.display = 'none';
         });
 
         slider.addEventListener('mousedown', e => {
