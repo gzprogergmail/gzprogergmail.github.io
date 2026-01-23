@@ -1,0 +1,1408 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <title>Brain Quest — 5 Stages</title>
+  <style>
+    :root{
+      --bg1:#0b1020; --bg2:#1a2b6b;
+      --card: rgba(255,255,255,.78);
+      --card2: rgba(255,255,255,.62);
+      --ink:#0b1020;
+      --muted: rgba(11,16,32,.62);
+      --shadow: 0 18px 45px rgba(11,16,32,.22);
+      --radius: 26px;
+      --pill: 999px;
+      --safe-top: env(safe-area-inset-top);
+      --safe-bot: env(safe-area-inset-bottom);
+    }
+
+    *{box-sizing:border-box;}
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family: ui-rounded, system-ui, -apple-system, "SF Pro Rounded", "Segoe UI", Roboto, Arial, sans-serif;
+      color: white;
+      overflow-x:hidden;
+      background: radial-gradient(1200px 900px at 20% 5%, rgba(255,255,255,.18), transparent 55%),
+                  radial-gradient(900px 700px at 80% 15%, rgba(255,214,255,.20), transparent 55%),
+                  linear-gradient(160deg, var(--bg1), var(--bg2));
+    }
+
+    /* Cute floating blobs */
+    .blob{
+      position:fixed; inset:auto;
+      width: 240px; height:240px;
+      filter: blur(0px);
+      opacity:.55;
+      border-radius: 52% 48% 41% 59% / 46% 54% 44% 56%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.55), rgba(255,255,255,0) 55%),
+                  linear-gradient(135deg, rgba(255,171,215,.85), rgba(137,255,201,.70));
+      animation: floaty 10s ease-in-out infinite;
+      pointer-events:none;
+      mix-blend-mode: screen;
+    }
+    .blob.b2{width: 300px; height:300px; opacity:.35;
+      background: radial-gradient(circle at 40% 40%, rgba(255,255,255,.35), rgba(255,255,255,0) 60%),
+                  linear-gradient(135deg, rgba(125,211,252,.75), rgba(253,164,175,.75));
+      animation-duration: 13s;
+    }
+    .blob.b3{width: 210px; height:210px; opacity:.35;
+      background: radial-gradient(circle at 40% 35%, rgba(255,255,255,.35), rgba(255,255,255,0) 60%),
+                  linear-gradient(135deg, rgba(250,204,21,.70), rgba(244,114,182,.70));
+      animation-duration: 15s;
+    }
+    @keyframes floaty{
+      0%{transform: translate(-10px, 0px) rotate(0deg);}
+      50%{transform: translate(14px, -18px) rotate(10deg);}
+      100%{transform: translate(-10px, 0px) rotate(0deg);}
+    }
+
+    .app{
+      min-height:100%;
+      padding: calc(var(--safe-top) + 18px) 16px calc(var(--safe-bot) + 18px);
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      max-width: 520px;
+      margin: 0 auto;
+      position:relative;
+    }
+
+    header{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 6px 4px;
+      gap: 12px;
+      user-select:none;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      min-width: 0;
+    }
+    .logo{
+      width:42px;height:42px; border-radius: 16px;
+      background: rgba(255,255,255,.14);
+      display:grid; place-items:center;
+      box-shadow: 0 10px 25px rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(10px);
+    }
+    .logo svg{width:30px;height:30px;}
+    .title{
+      display:flex; flex-direction:column; min-width:0;
+    }
+    .title h1{
+      margin:0;
+      font-size: 18px;
+      letter-spacing: .2px;
+      line-height: 1.1;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .title p{
+      margin:4px 0 0;
+      font-size: 12.5px;
+      color: rgba(255,255,255,.78);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+
+    .hud{
+      display:flex; align-items:center; gap:10px;
+    }
+    .chip{
+      padding: 8px 11px;
+      border-radius: var(--pill);
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(10px);
+      font-size: 12.5px;
+      color: rgba(255,255,255,.92);
+      display:flex; align-items:center; gap:8px;
+      box-shadow: 0 12px 26px rgba(0,0,0,.14);
+    }
+    .chip b{font-weight:800;}
+    .chip button{
+      all:unset;
+      cursor:pointer;
+      display:grid; place-items:center;
+      width:26px;height:26px;border-radius: 10px;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.18);
+    }
+    .chip button:active{transform: scale(.96);}
+
+    .progressWrap{
+      padding: 10px 6px 0;
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .meterRow{
+      display:flex; justify-content:space-between; align-items:center;
+      font-size: 12.5px;
+      color: rgba(255,255,255,.86);
+      padding: 0 4px;
+    }
+    .meterRow .muted{color: rgba(255,255,255,.70);}
+    .bar{
+      height: 10px;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: var(--pill);
+      overflow:hidden;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.15);
+    }
+    .bar > i{
+      display:block;
+      height:100%;
+      width:0%;
+      border-radius: var(--pill);
+      background: linear-gradient(90deg, rgba(137,255,201,.95), rgba(255,171,215,.95));
+      box-shadow: 0 10px 20px rgba(137,255,201,.18);
+      transition: width .35s ease;
+    }
+
+    main{
+      flex: 1;
+      display:flex;
+      flex-direction:column;
+      gap: 14px;
+      padding-top: 2px;
+    }
+
+    .card{
+      background: var(--card);
+      color: var(--ink);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.38);
+      backdrop-filter: blur(14px);
+      overflow:hidden;
+      position:relative;
+    }
+    .cardInner{
+      padding: 18px 16px 16px;
+    }
+
+    .stageSticker{
+      position:absolute; right: 12px; top: 12px;
+      padding: 8px 10px;
+      border-radius: 16px;
+      background: rgba(11,16,32,.06);
+      border: 1px dashed rgba(11,16,32,.14);
+      font-size: 12.5px;
+      color: rgba(11,16,32,.70);
+      display:flex; align-items:center; gap:8px;
+      user-select:none;
+    }
+    .stageDot{
+      width:10px;height:10px;border-radius:999px;
+      background: linear-gradient(180deg, rgba(137,255,201,.95), rgba(255,171,215,.95));
+      box-shadow: 0 6px 14px rgba(0,0,0,.10);
+    }
+
+    .question{
+      font-size: 18px;
+      line-height: 1.35;
+      margin: 8px 0 0;
+      letter-spacing:.1px;
+    }
+    .helper{
+      margin: 12px 0 0;
+      font-size: 12.5px;
+      line-height:1.35;
+      color: rgba(11,16,32,.68);
+      background: rgba(255,255,255,.55);
+      border: 1px solid rgba(11,16,32,.08);
+      border-radius: 16px;
+      padding: 10px 10px;
+    }
+
+    .ctaRow{
+      display:flex; gap:12px;
+      padding: 10px 12px 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.0), rgba(255,255,255,.55));
+      border-top: 1px solid rgba(11,16,32,.06);
+    }
+    .btn{
+      flex:1;
+      border: 0;
+      border-radius: 22px;
+      padding: 16px 14px;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      cursor:pointer;
+      box-shadow: 0 18px 30px rgba(11,16,32,.18);
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      transform: translateZ(0);
+    }
+    .btn:active{transform: scale(.98);}
+    .btnYes{
+      background: linear-gradient(135deg, rgba(137,255,201,1), rgba(34,211,238,1));
+      color: rgba(11,16,32,.92);
+    }
+    .btnNo{
+      background: linear-gradient(135deg, rgba(253,164,175,1), rgba(216,180,254,1));
+      color: rgba(11,16,32,.92);
+    }
+
+    .tinyRow{
+      display:flex;
+      gap: 10px;
+      justify-content:space-between;
+      align-items:center;
+      padding: 0 2px;
+      color: rgba(255,255,255,.86);
+      font-size: 12.5px;
+    }
+    .linkBtn{
+      all:unset;
+      cursor:pointer;
+      padding: 8px 10px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(10px);
+    }
+    .linkBtn:active{transform: scale(.98);}
+
+    /* Toast XP */
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom: calc(var(--safe-bot) + 96px);
+      transform: translateX(-50%);
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.22);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 18px 30px rgba(0,0,0,.18);
+      font-weight: 900;
+      opacity: 0;
+      pointer-events:none;
+      transition: opacity .18s ease, transform .35s ease;
+      will-change: transform, opacity;
+    }
+    .toast.show{
+      opacity:1;
+      transform: translateX(-50%) translateY(-8px);
+    }
+
+    /* Celebration overlay (non-modal) */
+    .celebrate{
+      position:fixed; inset:0;
+      display:none;
+      align-items:center; justify-content:center;
+      z-index: 50;
+      pointer-events:none;
+    }
+    .celebrate.show{display:flex;}
+    .celebrate .panel{
+      width: min(92vw, 430px);
+      border-radius: 30px;
+      background: rgba(255,255,255,.84);
+      border: 1px solid rgba(255,255,255,.45);
+      box-shadow: 0 30px 80px rgba(11,16,32,.32);
+      color: rgba(11,16,32,.92);
+      padding: 18px 16px 16px;
+      text-align:center;
+      transform: translateY(14px) scale(.98);
+      opacity:0;
+      animation: pop .9s ease forwards;
+      position:relative;
+      overflow:hidden;
+    }
+    @keyframes pop{
+      0%{opacity:0; transform: translateY(14px) scale(.98);}
+      45%{opacity:1; transform: translateY(0px) scale(1.01);}
+      100%{opacity:1; transform: translateY(0px) scale(1);}
+    }
+    .celebrate h2{margin: 6px 0 6px; font-size: 22px;}
+    .celebrate p{margin:0; color: rgba(11,16,32,.70); font-size: 13px; line-height:1.35;}
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 10px 14px;
+      border-radius: 20px;
+      background: rgba(11,16,32,.06);
+      border: 1px dashed rgba(11,16,32,.18);
+      font-weight: 900;
+      margin-top: 10px;
+    }
+    .badge i{
+      width: 26px; height: 26px; border-radius: 12px;
+      display:grid; place-items:center;
+      background: linear-gradient(135deg, rgba(137,255,201,.95), rgba(255,171,215,.95));
+      box-shadow: 0 10px 20px rgba(0,0,0,.12);
+    }
+
+    canvas#confetti{
+      position:fixed; inset:0;
+      z-index: 49;
+      pointer-events:none;
+      display:none;
+    }
+    canvas#confetti.show{display:block;}
+
+    /* Start modal (allowed) */
+    .modalBack{
+      position:fixed; inset:0;
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding: 18px 16px calc(var(--safe-bot) + 18px);
+      background: rgba(0,0,0,.45);
+      backdrop-filter: blur(8px);
+      z-index: 70;
+    }
+    .modalBack.show{display:flex;}
+    .modal{
+      width: min(92vw, 520px);
+      border-radius: 32px;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(255,255,255,.50);
+      box-shadow: 0 30px 90px rgba(0,0,0,.35);
+      color: rgba(11,16,32,.92);
+      overflow:hidden;
+    }
+    .modal .top{
+      padding: 18px 16px 10px;
+      display:flex; gap:12px; align-items:flex-start;
+    }
+    .modal .icon{
+      width: 48px; height:48px; border-radius: 18px;
+      background: linear-gradient(135deg, rgba(125,211,252,1), rgba(253,164,175,1));
+      display:grid; place-items:center;
+      flex:0 0 auto;
+      box-shadow: 0 18px 30px rgba(11,16,32,.18);
+    }
+    .modal h3{margin:2px 0 4px; font-size: 18px;}
+    .modal p{margin:0; color: rgba(11,16,32,.70); font-size: 13px; line-height:1.35;}
+    .modal .rules{
+      padding: 0 16px 14px;
+      display:grid; gap:10px;
+    }
+    .rule{
+      background: rgba(11,16,32,.05);
+      border: 1px solid rgba(11,16,32,.08);
+      border-radius: 18px;
+      padding: 10px 10px;
+      font-size: 12.5px;
+      line-height:1.35;
+      color: rgba(11,16,32,.78);
+    }
+    .modal .actions{
+      display:flex; gap:10px;
+      padding: 12px 12px 12px;
+      border-top: 1px solid rgba(11,16,32,.08);
+      background: rgba(255,255,255,.75);
+    }
+    .modal .actions button{
+      flex:1;
+      border:0;
+      border-radius: 22px;
+      padding: 14px 12px;
+      font-weight: 900;
+      cursor:pointer;
+      font-size: 15px;
+      box-shadow: 0 18px 30px rgba(11,16,32,.14);
+    }
+    .primary{
+      background: linear-gradient(135deg, rgba(137,255,201,1), rgba(34,211,238,1));
+      color: rgba(11,16,32,.92);
+    }
+    .secondary{
+      background: rgba(11,16,32,.06);
+      color: rgba(11,16,32,.90);
+      border: 1px solid rgba(11,16,32,.12);
+      box-shadow:none !important;
+    }
+
+    /* Results */
+    .results{
+      display:none;
+      gap: 14px;
+    }
+    .results.show{display:flex; flex-direction:column;}
+    .hero{
+      padding: 18px 16px 16px;
+      position:relative;
+    }
+    .scoreRing{
+      width: 150px; height:150px;
+      border-radius: 999px;
+      display:grid; place-items:center;
+      margin: 6px auto 0;
+      background: conic-gradient(from 200deg, rgba(137,255,201,1) var(--p), rgba(255,171,215,1) 0, rgba(255,255,255,.0) 0);
+      filter: drop-shadow(0 20px 30px rgba(11,16,32,.18));
+    }
+    .scoreRing > div{
+      width: 120px; height:120px; border-radius: 999px;
+      background: rgba(255,255,255,.90);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      color: rgba(11,16,32,.92);
+      border: 1px solid rgba(11,16,32,.08);
+    }
+    .scoreRing .big{font-size: 34px; font-weight: 950; line-height:1;}
+    .scoreRing .small{font-size: 12.5px; color: rgba(11,16,32,.65); margin-top: 4px;}
+    .cards{
+      display:grid; gap: 10px;
+      padding: 0 0 2px;
+    }
+    .miniCard{
+      background: rgba(255,255,255,.86);
+      border: 1px solid rgba(255,255,255,.45);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      color: rgba(11,16,32,.92);
+      padding: 14px 14px;
+    }
+    .miniCard h4{margin:0 0 6px; font-size: 14px;}
+    .miniCard p{margin:0; font-size: 13px; color: rgba(11,16,32,.70); line-height:1.35;}
+    .seg{
+      margin-top: 10px;
+      height: 10px;
+      border-radius: var(--pill);
+      background: rgba(11,16,32,.08);
+      overflow:hidden;
+    }
+    .seg i{
+      display:block;
+      height:100%;
+      width: var(--w);
+      border-radius: var(--pill);
+      background: linear-gradient(90deg, rgba(125,211,252,1), rgba(253,164,175,1));
+    }
+    .footActions{
+      display:flex; gap:10px;
+    }
+    .footActions button{
+      flex:1;
+      border:0;
+      border-radius: 20px;
+      padding: 14px 12px;
+      font-weight: 900;
+      cursor:pointer;
+      font-size: 15px;
+      box-shadow: 0 18px 30px rgba(11,16,32,.14);
+    }
+
+    /* Reduce motion */
+    @media (prefers-reduced-motion: reduce){
+      .blob{animation:none;}
+      .bar > i{transition:none;}
+      .toast{transition:none;}
+      .celebrate .panel{animation:none; opacity:1; transform:none;}
+    }
+  </style>
+</head>
+<body>
+  <div class="blob" style="left:-60px; top:90px;"></div>
+  <div class="blob b2" style="right:-90px; top:140px;"></div>
+  <div class="blob b3" style="left:-40px; bottom:120px;"></div>
+
+  <canvas id="confetti"></canvas>
+
+  <div class="celebrate" id="celebrate">
+    <div class="panel">
+      <div style="font-size:34px; line-height:1;">🎉</div>
+      <h2 id="celebrateTitle">Stage Cleared!</h2>
+      <p id="celebrateSub">Nice. Next stage loading…</p>
+      <div class="badge"><i>✨</i><span id="celebrateBadge">+120 XP</span></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">+25 XP</div>
+
+  <div class="modalBack" id="startModal" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="top">
+        <div class="icon" aria-hidden="true">🧠</div>
+        <div>
+          <h3 id="startTitle">Start the run</h3>
+          <p id="startSubtitle">5 stages • 10 questions each • Yes / No only</p>
+        </div>
+      </div>
+      <div class="rules">
+        <div class="rule"><b>Yes / No only.</b> Pick one. No sliders, no essays.</div>
+        <div class="rule"><b>The strict rule:</b> if you are hesitant, if it is “sometimes”, or if you are not 100% sure, answer <b>No</b>.</div>
+        <div class="rule"><b>Say Yes only when:</b> it happens clearly more than your peers <b>and</b> it causes real problems in your life.</div>
+      </div>
+      <div class="actions" id="startActions">
+        <button class="secondary" id="restartBtn" style="display:none;">Restart</button>
+        <button class="primary" id="startBtn">Start</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app" id="app">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <path d="M18 28c0-10 8-18 18-18 6 0 11 3 14 7" stroke="rgba(255,255,255,.92)" stroke-width="5" stroke-linecap="round"/>
+            <path d="M46 25c0 7-6 13-13 13H20" stroke="rgba(255,255,255,.92)" stroke-width="5" stroke-linecap="round"/>
+            <path d="M22 41c2 4 6 7 11 7 7 0 13-6 13-13" stroke="rgba(255,255,255,.92)" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="19" cy="44" r="4" fill="rgba(255,255,255,.92)"/>
+          </svg>
+        </div>
+        <div class="title">
+          <h1>Brain Quest</h1>
+          <p>Clear 5 stages • Answer Yes / No only</p>
+        </div>
+      </div>
+
+      <div class="hud">
+        <div class="chip" title="XP">
+          <span>⭐</span>
+          <b id="xpVal">0</b>
+        </div>
+        <div class="chip" title="Sound">
+          <span id="soundIcon">🔊</span>
+          <button id="soundBtn" aria-label="Toggle sound">♪</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="progressWrap" id="runUI">
+      <div class="meterRow">
+        <span><b id="stageLabel">Stage 1/5</b> <span class="muted">•</span> <span id="stageTheme">Candy Comet</span></span>
+        <span class="muted"><span id="qIndex">1</span>/<span id="qInStage">10</span></span>
+      </div>
+      <div class="bar" aria-label="progress"><i id="barFill"></i></div>
+      <div class="tinyRow">
+        <button class="linkBtn" id="backBtn" aria-label="Back">← Back</button>
+        <button class="linkBtn" id="reviewBtn" aria-label="Review answered">Review</button>
+      </div>
+    </div>
+
+    <main>
+      <section class="card" id="questionCard">
+        <div class="stageSticker" aria-hidden="true"><span class="stageDot"></span><span id="stickerText">Checkpoint</span></div>
+        <div class="cardInner">
+          <div class="question" id="questionText">…</div>
+          <div class="helper" id="helperText">Tip: If you are not 100% sure, answer No.</div>
+        </div>
+        <div class="ctaRow">
+          <button class="btn btnYes" id="yesBtn">YES 👍</button>
+          <button class="btn btnNo" id="noBtn">NO 👎</button>
+        </div>
+      </section>
+
+      <section class="results" id="results">
+        <section class="card">
+          <div class="hero">
+            <div style="text-align:center; font-weight:950; font-size:18px;">Your run summary</div>
+            <div class="scoreRing" id="scoreRing" style="--p:0deg;">
+              <div>
+                <div class="big" id="totalYes">0</div>
+                <div class="small">Yes out of 50</div>
+              </div>
+            </div>
+            <div style="text-align:center; margin-top:10px; color: rgba(11,16,32,.72); font-size: 13px;" id="overallEval">—</div>
+          </div>
+        </section>
+
+        <div class="cards" id="resultCards"></div>
+
+        <section class="card">
+          <div class="cardInner">
+            <div style="font-weight:950; font-size:14px; color: rgba(11,16,32,.86);">Sources</div>
+            <div style="margin-top:8px; font-size:12.5px; color: rgba(11,16,32,.72); line-height:1.35;">
+              The questions below are paraphrased from widely used clinical criteria and screening references (not copied verbatim). This is a screening-style self-check, not a diagnosis.
+              <div style="margin-top:8px;">
+                <ul style="margin:0; padding-left:18px;">
+                  <li>DSM-5-TR criteria framework for ADHD and autism spectrum disorder (clinical criteria reference).</li>
+                  <li>WHO Adult ADHD Self-Report Scale (ASRS) overview and use in adult screening.</li>
+                  <li>NICE autism guidance (AQ-10 as a brief autism screening tool reference).</li>
+                  <li>CADDRA guidance (differential diagnosis and comorbidities in ADHD assessment).</li>
+                  <li>NIMH pages on anxiety, depression, and bipolar disorder symptom descriptions.</li>
+                  <li>Mayo Clinic overview of sleep apnea symptoms.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="footActions">
+          <button class="secondary" id="shareBtn">Share</button>
+          <button class="primary" id="againBtn">Run again</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    /**********************************************************************
+     * Data (embedded)
+     **********************************************************************/
+    const BANK = [
+      /* ADHD-like (30) */
+      {id:"A01", domain:"adhd", text:"Do you often feel stuck and unable to start an important task for a long time, even while you strongly want to begin and it causes real consequences?"},
+      {id:"A02", domain:"adhd", text:"Do you usually start work only when the deadline or consequences become urgent, even when you planned to start earlier, and it repeatedly causes problems?"},
+      {id:"A03", domain:"adhd", text:"In conversations, do you drift off and miss key details even when you are trying hard to listen, and it harms your relationships or work?"},
+      {id:"A04", domain:"adhd", text:"Do you avoid tasks that require sustained mental effort until it causes missed deadlines or serious stress?"},
+      {id:"A05", domain:"adhd", text:"Have you lost essential items (keys, phone, wallet, documents) more than once in the last 6 months, causing real disruption?"},
+      {id:"A06", domain:"adhd", text:"Is your living or work space so disorganized that it regularly blocks daily functioning (finding things, using the space) or causes conflict/embarrassment?"},
+      {id:"A07", domain:"adhd", text:"Do you make careless mistakes in important work even after checking, because you overlook details and it leads to concrete problems?"},
+      {id:"A08", domain:"adhd", text:"Do you rely on constant reminders/alarms/lists for basic appointments because you cannot depend on memory, and missing reminders causes real issues?"},
+      {id:"A09", domain:"adhd", text:"Do you frequently forget what you were about to do (mid-task) multiple times a day, and it interferes with daily life?"},
+      {id:"A10", domain:"adhd", text:"Does normal background noise make it difficult to focus compared with peers, to the point it hurts performance?"},
+      {id:"A11", domain:"adhd", text:"Do you feel intense physical restlessness when you must sit still for 30+ minutes, and it creates problems in meetings, classes, or events?"},
+      {id:"A12", domain:"adhd", text:"Are you fidgeting or moving almost constantly without noticing, and it is disruptive or socially noticeable?"},
+      {id:"A13", domain:"adhd", text:"Do your thoughts race so much at night that it reliably delays sleep, even when you are exhausted, and this harms functioning?"},
+      {id:"A14", domain:"adhd", text:"Are you repeatedly told you interrupt, talk over people, or dominate conversations, and it causes friction?"},
+      {id:"A15", domain:"adhd", text:"Do you blurt out comments or answers before thinking, and you later regret it because it causes real social or work problems?"},
+      {id:"A16", domain:"adhd", text:"Have you made a major decision on impulse (job, relationship, big commitment) and later faced serious consequences from not thinking it through?"},
+      {id:"A17", domain:"adhd", text:"Do you struggle with impulse spending that has created genuine financial stress or debt?"},
+      {id:"A18", domain:"adhd", text:"Do you seek stimulation to escape boredom in ways that have harmed your health, safety, or responsibilities?"},
+      {id:"A19", domain:"adhd", text:"Do you often feel immediate regret right after speaking because the words came out before you processed the thought?"},
+      {id:"A20", domain:"adhd", text:"Do long lines or slow traffic trigger anger that is clearly out of proportion and harms your day or relationships?"},
+      {id:"A21", domain:"adhd", text:"Do you consistently underestimate how long tasks take and end up late or rushed, despite serious efforts to plan, and it causes problems?"},
+      {id:"A22", domain:"adhd", text:"Do you lose track of time so deeply on one activity that you miss meals, sleep, or obligations, and it creates real consequences?"},
+      {id:"A23", domain:"adhd", text:"Is starting your day (getting up and initiating the first steps) a daily struggle that requires major mental effort beyond ordinary tiredness, and it harms functioning?"},
+      {id:"A24", domain:"adhd", text:"When you must manage multiple steps at once (cooking, errands), do you frequently miss steps or create mishaps because you cannot track parallel tasks?"},
+      {id:"A25", domain:"adhd", text:"Do you often start new projects or hobbies with intense enthusiasm and then abandon them within weeks, repeatedly, causing meaningful waste or regret?"},
+      {id:"A26", domain:"adhd", text:"If someone gives you three spoken instructions, do you usually lose part of them before you can act, and it causes problems at work/school/home?"},
+      {id:"A27", domain:"adhd", text:"Do you spend a long time perfecting trivial details while urgent core work is neglected, causing missed deliverables or stress?"},
+      {id:"A28", domain:"adhd", text:"Does switching from one context to another (e.g., work to home) cause a noticeable mental crash that blocks functioning for a while?"},
+      {id:"A29", domain:"adhd", text:"Do you have difficulty maintaining friendships because you forget to reply or reconnect for long periods, and it has cost you relationships?"},
+      {id:"A30", domain:"adhd", text:"If you removed your external coping tools (alarms, lists, strict routines), would your daily life quickly become unmanageable?"},
+      /* Autism/Asperger-like (10) */
+      {id:"S01", domain:"autism", text:"Do you often miss indirect social cues (tone, hints, unspoken expectations) and it repeatedly causes misunderstandings or conflict?"},
+      {id:"S02", domain:"autism", text:"Do you find back-and-forth small talk unusually hard to sustain, and it limits social or work networking?"},
+      {id:"S03", domain:"autism", text:"Do you feel you must consciously “script” or rehearse social interactions to get through them, and this is exhausting?"},
+      {id:"S04", domain:"autism", text:"Do you strongly prefer predictable routines, and unexpected changes routinely cause significant distress or shutdown?"},
+      {id:"S05", domain:"autism", text:"Do you have highly focused interests that dominate your time or conversations and have caused social or practical problems?"},
+      {id:"S06", domain:"autism", text:"Do you struggle to interpret facial expressions or body language accurately, even when you try, and it causes real issues?"},
+      {id:"S07", domain:"autism", text:"Are you unusually sensitive to sensory input (sound, light, textures, smells) to the point it can trigger overwhelm or anger?"},
+      {id:"S08", domain:"autism", text:"Do you find group conversations difficult to follow because multiple voices and rapid turns overload you, affecting participation?"},
+      {id:"S09", domain:"autism", text:"Do you prefer to be alone much of the time not only for rest, but because social interaction feels confusing or draining?"},
+      {id:"S10", domain:"autism", text:"Have these social-communication and routine/sensory patterns been present since childhood (even if masked), rather than starting recently?"},
+      /* Other conditions that can look similar (10) */
+      {id:"D01", domain:"other", text:"For at least two weeks at a time, have you had a persistently low mood or loss of interest that clearly reduced your ability to function?"},
+      {id:"D02", domain:"other", text:"Have sleep problems (too little, too much, or unrefreshing sleep) been a major driver of your concentration and motivation issues?"},
+      {id:"D03", domain:"other", text:"Do you have frequent anxiety that makes it hard to concentrate because you feel tense, on edge, or worried most days?"},
+      {id:"D04", domain:"other", text:"Do you avoid tasks mainly because of fear of failure, criticism, or making mistakes, and this avoidance drives missed deadlines?"},
+      {id:"D05", domain:"other", text:"Have you had periods of unusually high energy or irritability with less need for sleep, where you were more talkative or impulsive, and it caused trouble?"},
+      {id:"D06", domain:"other", text:"Do you often feel physically restless mainly due to anxiety (not boredom), with symptoms like muscle tension or a “keyed up” feeling?"},
+      {id:"D07", domain:"other", text:"Do you snore loudly or wake up gasping, and daytime sleepiness is a major reason you cannot focus?"},
+      {id:"D08", domain:"other", text:"Have concentration problems started only recently after a major life change or illness, rather than being lifelong?"},
+      {id:"D09", domain:"other", text:"Do you use alcohol, nicotine, or other substances mainly to regulate attention, mood, or restlessness, and it is contributing to problems?"},
+      {id:"D10", domain:"other", text:"Do you have frequent intrusive memories or hypervigilance after a stressful event, and this is a major driver of attention and sleep issues?"}
+    ];
+
+    const THEMES = [
+      {name:"Candy Comet", bg1:"#0b1020", bg2:"#2446ff", accent1:"#89ffc9", accent2:"#ffabd7", mascot:"🍬"},
+      {name:"Bubble Nebula", bg1:"#0b1020", bg2:"#6b21a8", accent1:"#7dd3fc", accent2:"#fda4af", mascot:"🫧"},
+      {name:"Jelly Lagoon", bg1:"#071a1f", bg2:"#0f766e", accent1:"#a7f3d0", accent2:"#fbcfe8", mascot:"🪼"},
+      {name:"Star Arcade", bg1:"#0b1020", bg2:"#1d4ed8", accent1:"#fde68a", accent2:"#c4b5fd", mascot:"🕹️"},
+      {name:"Peach Cloud", bg1:"#111827", bg2:"#fb7185", accent1:"#93c5fd", accent2:"#fda4af", mascot:"🍑"}
+    ];
+
+    /**********************************************************************
+     * Session storage
+     **********************************************************************/
+    const STORE_KEY = "brainQuestRun_v3";
+
+    function loadRun(){
+      try{
+        const raw = sessionStorage.getItem(STORE_KEY);
+        if(!raw) return null;
+        const obj = JSON.parse(raw);
+        if(!obj || !Array.isArray(obj.order) || typeof obj.idx !== "number") return null;
+        return obj;
+      }catch(e){ return null; }
+    }
+    function saveRun(run){
+      sessionStorage.setItem(STORE_KEY, JSON.stringify(run));
+    }
+    function clearRun(){
+      sessionStorage.removeItem(STORE_KEY);
+    }
+
+    /**********************************************************************
+     * Audio (works after Start tap)
+     **********************************************************************/
+    let audioEnabled = true;
+    let audioReady = false;
+    let audioCtx = null;
+
+    // External SFX (CDN)
+    const SFX_URLS = {
+      tap: "https://assets.mixkit.co/active_storage/sfx/212/212-preview.mp3",
+      win: "https://assets.mixkit.co/active_storage/sfx/833/833-preview.mp3"
+    };
+
+    const sfx = {
+      tap: new Audio(),
+      win: new Audio()
+    };
+    sfx.tap.preload = "auto";
+    sfx.win.preload = "auto";
+    sfx.tap.src = SFX_URLS.tap;
+    sfx.win.src = SFX_URLS.win;
+
+    function ensureAudioContext(){
+      if(audioCtx) return;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return;
+      audioCtx = new AC();
+    }
+
+    function playSfx(which){
+      if(!audioEnabled) return;
+      // Prefer CDN mp3 when available; fallback to synth.
+      const a = sfx[which];
+      if(a){
+        try{ a.currentTime = 0; a.play(); return; }catch(e){}
+      }
+      synthBlip(which === "win" ? 800 : 520, 0.09);
+    }
+
+    function synthBlip(freq=520, dur=0.08){
+      if(!audioEnabled) return;
+      ensureAudioContext();
+      if(!audioCtx) return;
+      const t0 = audioCtx.currentTime;
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(freq, t0);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.22, t0 + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g).connect(audioCtx.destination);
+      o.start(t0);
+      o.stop(t0 + dur + 0.02);
+    }
+
+    // Tiny synth “theme music”: chord pad + plucky melody
+    let musicTimer = null;
+    let musicState = {stage:0, step:0};
+
+    function stopMusic(){
+      if(musicTimer){ clearInterval(musicTimer); musicTimer = null; }
+    }
+
+    function startMusicForStage(stageIndex){
+      if(!audioEnabled) return;
+      ensureAudioContext();
+      if(!audioCtx) return;
+      stopMusic();
+
+      const theme = THEMES[stageIndex];
+      const base = [196, 220, 246, 262, 294][stageIndex]; // G3 A3 B3 C4 D4-ish
+      const scale = [0, 2, 4, 7, 9, 12];
+      const chord = [
+        [0, 7, 12],
+        [2, 9, 14],
+        [4, 11, 16],
+        [0, 5, 12],
+        [2, 7, 14]
+      ][stageIndex];
+
+      musicState = {stage:stageIndex, step:0};
+
+      // soft pad layer
+      const pad = () => {
+        const t0 = audioCtx.currentTime;
+        chord.forEach((semi, i)=>{
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.type = "sine";
+          o.frequency.value = base * Math.pow(2, semi/12);
+          g.gain.value = 0.0001;
+          g.gain.exponentialRampToValueAtTime(0.08 / (i+1), t0 + 0.03);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.95);
+          o.connect(g).connect(audioCtx.destination);
+          o.start(t0);
+          o.stop(t0 + 1.0);
+        });
+      };
+
+      // plucky melody
+      const pluck = (freq)=>{
+        const t0 = audioCtx.currentTime;
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = "square";
+        o.frequency.value = freq;
+        g.gain.value = 0.0001;
+        g.gain.exponentialRampToValueAtTime(0.12, t0 + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+        const f = audioCtx.createBiquadFilter();
+        f.type = "lowpass";
+        f.frequency.value = 2200;
+        o.connect(f).connect(g).connect(audioCtx.destination);
+        o.start(t0);
+        o.stop(t0 + 0.2);
+      };
+
+      pad();
+      musicTimer = setInterval(()=>{
+        if(!audioEnabled || !audioCtx) return;
+        // small drift: refresh pad occasionally
+        if(musicState.step % 8 === 0) pad();
+        const pick = scale[(musicState.step + stageIndex) % scale.length];
+        const freq = base * Math.pow(2, pick/12);
+        pluck(freq);
+        musicState.step++;
+      }, 260); // gentle, not annoying
+    }
+
+    async function unlockAudio(){
+      // iOS requires a user gesture; this runs on Start click.
+      audioReady = true;
+      ensureAudioContext();
+      if(audioCtx && audioCtx.state === "suspended"){
+        try{ await audioCtx.resume(); }catch(e){}
+      }
+      // prime HTMLAudio elements
+      try{
+        const p = sfx.tap.play();
+        if(p && p.then) await p.then(()=>{ sfx.tap.pause(); sfx.tap.currentTime=0; }).catch(()=>{});
+      }catch(e){}
+    }
+
+    /**********************************************************************
+     * Confetti
+     **********************************************************************/
+    const confettiCanvas = document.getElementById("confetti");
+    const ctx2 = confettiCanvas.getContext("2d");
+    let confettiAnim = null;
+    let confettiBits = [];
+
+    function resizeCanvas(){
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      confettiCanvas.width = Math.floor(window.innerWidth * dpr);
+      confettiCanvas.height = Math.floor(window.innerHeight * dpr);
+      ctx2.setTransform(dpr,0,0,dpr,0,0);
+    }
+    window.addEventListener("resize", resizeCanvas, {passive:true});
+    resizeCanvas();
+
+    function burstConfetti(){
+      confettiCanvas.classList.add("show");
+      const W = window.innerWidth, H = window.innerHeight;
+      confettiBits = [];
+      const n = 110;
+      for(let i=0;i<n;i++){
+        confettiBits.push({
+          x: W*0.5 + (Math.random()-0.5)*30,
+          y: H*0.35 + (Math.random()-0.5)*20,
+          vx: (Math.random()-0.5)*10,
+          vy: Math.random()*-10 - 4,
+          r: Math.random()*6 + 3,
+          a: Math.random()*Math.PI*2,
+          va: (Math.random()-0.5)*0.25,
+          life: 0,
+          ttl: 140 + Math.random()*40
+        });
+      }
+      if(confettiAnim) cancelAnimationFrame(confettiAnim);
+      const tick = ()=>{
+        ctx2.clearRect(0,0,window.innerWidth, window.innerHeight);
+        confettiBits.forEach(p=>{
+          p.life++;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.35;
+          p.a += p.va;
+          const alpha = Math.max(0, 1 - (p.life / p.ttl));
+          ctx2.globalAlpha = alpha;
+          ctx2.save();
+          ctx2.translate(p.x, p.y);
+          ctx2.rotate(p.a);
+          ctx2.fillStyle = `hsl(${(p.life*7 + p.r*20)%360} 90% 60%)`;
+          ctx2.fillRect(-p.r/2, -p.r/2, p.r, p.r*1.2);
+          ctx2.restore();
+          ctx2.globalAlpha = 1;
+        });
+        confettiBits = confettiBits.filter(p=>p.life < p.ttl && p.y < H + 40);
+        if(confettiBits.length){
+          confettiAnim = requestAnimationFrame(tick);
+        }else{
+          confettiCanvas.classList.remove("show");
+          ctx2.clearRect(0,0,window.innerWidth, window.innerHeight);
+        }
+      };
+      tick();
+    }
+
+    /**********************************************************************
+     * UI + Run logic
+     **********************************************************************/
+    const el = (id)=>document.getElementById(id);
+
+    const startModal = el("startModal");
+    const startBtn = el("startBtn");
+    const restartBtn = el("restartBtn");
+    const startTitle = el("startTitle");
+    const startSubtitle = el("startSubtitle");
+
+    const questionCard = el("questionCard");
+    const questionText = el("questionText");
+    const helperText = el("helperText");
+
+    const stageLabel = el("stageLabel");
+    const stageTheme = el("stageTheme");
+    const qIndex = el("qIndex");
+    const qInStage = el("qInStage");
+    const barFill = el("barFill");
+    const stickerText = el("stickerText");
+    const xpVal = el("xpVal");
+
+    const yesBtn = el("yesBtn");
+    const noBtn = el("noBtn");
+    const backBtn = el("backBtn");
+    const reviewBtn = el("reviewBtn");
+
+    const celebrate = el("celebrate");
+    const celebrateTitle = el("celebrateTitle");
+    const celebrateSub = el("celebrateSub");
+    const celebrateBadge = el("celebrateBadge");
+
+    const toast = el("toast");
+
+    const results = el("results");
+    const runUI = el("runUI");
+
+    const totalYesEl = el("totalYes");
+    const scoreRing = el("scoreRing");
+    const overallEval = el("overallEval");
+    const resultCards = el("resultCards");
+    const againBtn = el("againBtn");
+    const shareBtn = el("shareBtn");
+
+    const soundBtn = el("soundBtn");
+    const soundIcon = el("soundIcon");
+
+    let run = null;
+
+    function makeNewRun(){
+      // Shuffle IDs so categories do not align with stages.
+      const ids = BANK.map(q=>q.id);
+      for(let i=ids.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [ids[i], ids[j]] = [ids[j], ids[i]];
+      }
+      return {
+        v: 3,
+        startedAt: Date.now(),
+        order: ids,
+        idx: 0,
+        answers: {}, // id -> true/false
+        xp: 0,
+        streak: 0,
+        sound: true
+      };
+    }
+
+    function getQuestionById(id){
+      return BANK.find(q=>q.id===id);
+    }
+
+    function currentStage(){
+      return Math.floor(run.idx / 10); // 0..4
+    }
+    function inStageIndex(){
+      return (run.idx % 10) + 1; // 1..10
+    }
+
+    function setTheme(stageIdx){
+      const t = THEMES[stageIdx];
+      document.documentElement.style.setProperty("--bg1", t.bg1);
+      document.documentElement.style.setProperty("--bg2", t.bg2);
+
+      // progress gradient
+      const grad = `linear-gradient(90deg, ${t.accent1}, ${t.accent2})`;
+      barFill.style.background = grad;
+
+      // sticker
+      stickerText.textContent = `${t.mascot} Stage vibe`;
+
+      stageTheme.textContent = t.name;
+
+      // fun helper variation per stage (no negativity labels)
+      const hints = [
+        "Quick check: say YES only if it clearly causes real problems.",
+        "Strict mode: if it is “sometimes”, that is a NO.",
+        "No overthinking. Pick the strict answer and keep moving.",
+        "If it is not frequent and impairing, it is a NO.",
+        "Final stretch: be consistent with the strict rule."
+      ];
+      helperText.textContent = hints[stageIdx];
+
+      if(audioReady) startMusicForStage(stageIdx);
+    }
+
+    function updateUI(){
+      const total = run.order.length; // 50
+      const stageIdx = currentStage();
+      const pos = inStageIndex();
+
+      stageLabel.textContent = `Stage ${stageIdx+1}/5`;
+      qIndex.textContent = String(pos);
+      qInStage.textContent = "10";
+
+      const globalProgress = Math.min(1, run.idx / total);
+      barFill.style.width = `${Math.round(globalProgress*100)}%`;
+
+      xpVal.textContent = String(run.xp);
+
+      setTheme(stageIdx);
+
+      const qid = run.order[run.idx];
+      const q = getQuestionById(qid);
+      questionText.textContent = q ? q.text : "—";
+
+      // Back button only when possible
+      backBtn.style.opacity = run.idx > 0 ? "1" : ".45";
+      backBtn.style.pointerEvents = run.idx > 0 ? "auto" : "none";
+    }
+
+    function showToast(text){
+      toast.textContent = text;
+      toast.classList.add("show");
+      setTimeout(()=>toast.classList.remove("show"), 520);
+    }
+
+    function addXP(base){
+      // simple reward curve: streak grows reward slightly
+      run.streak = Math.min(12, (run.streak||0) + 1);
+      const bonus = Math.floor(run.streak * 2.5);
+      const gained = base + bonus;
+      run.xp += gained;
+      saveRun(run);
+      xpVal.textContent = String(run.xp);
+      showToast(`+${gained} XP`);
+      if(navigator.vibrate) try{ navigator.vibrate(18); }catch(e){}
+      return gained;
+    }
+
+    function answerCurrent(val){
+      const qid = run.order[run.idx];
+      run.answers[qid] = !!val;
+      saveRun(run);
+
+      // SFX + reward
+      playSfx("tap");
+      addXP(val ? 26 : 18);
+
+      // advance
+      const wasEndOfStage = ((run.idx % 10) === 9);
+      run.idx = Math.min(run.idx + 1, run.order.length);
+      saveRun(run);
+
+      if(run.idx >= run.order.length){
+        finishRun();
+        return;
+      }
+
+      if(wasEndOfStage){
+        stageCelebration();
+      }else{
+        updateUI();
+      }
+    }
+
+    function stageCelebration(){
+      run.streak = 0; // reset streak each stage
+      saveRun(run);
+
+      const s = currentStage(); // already advanced to next question, so stage index is next stage
+      const cleared = s; // stage just cleared is s (0..4), because idx already moved
+      const clearedIdx = cleared; // stage number is clearedIdx
+      const nextStage = clearedIdx; // after increment, currentStage() is next stage
+      const title = (clearedIdx) ? `Stage ${clearedIdx} cleared!` : "Stage cleared!";
+      celebrateTitle.textContent = title;
+      celebrateSub.textContent = "Nice. Next stage loading…";
+
+      const gained = addXP(120);
+      celebrateBadge.textContent = `+${gained} XP`;
+
+      burstConfetti();
+      playSfx("win");
+
+      celebrate.classList.add("show");
+      setTimeout(()=>{
+        celebrate.classList.remove("show");
+        updateUI();
+      }, 1050);
+    }
+
+    function goBack(){
+      if(run.idx <= 0) return;
+      run.idx -= 1;
+      run.streak = 0;
+      saveRun(run);
+      updateUI();
+      playSfx("tap");
+    }
+
+    function review(){
+      // non-modal “review” by briefly showing what is answered in this stage
+      playSfx("tap");
+      const stageIdx = currentStage();
+      const start = stageIdx*10;
+      const end = start + 10;
+      const slice = run.order.slice(start, Math.min(end, run.order.length));
+      const answered = slice.filter(id => typeof run.answers[id] === "boolean").length;
+      showToast(`${answered}/10 answered in this stage`);
+    }
+
+    function setSound(on){
+      audioEnabled = !!on;
+      run.sound = audioEnabled;
+      saveRun(run);
+      soundIcon.textContent = audioEnabled ? "🔊" : "🔇";
+      if(!audioEnabled) stopMusic();
+      else if(audioReady) startMusicForStage(currentStage());
+    }
+
+    function finishRun(){
+      stopMusic();
+      runUI.style.display = "none";
+      questionCard.style.display = "none";
+      results.classList.add("show");
+
+      const yesIds = Object.keys(run.answers).filter(k=>run.answers[k]===true);
+      const totalYes = yesIds.length;
+
+      const adhdYes = yesIds.filter(id => getQuestionById(id)?.domain === "adhd").length;
+      const autYes  = yesIds.filter(id => getQuestionById(id)?.domain === "autism").length;
+      const othYes  = yesIds.filter(id => getQuestionById(id)?.domain === "other").length;
+
+      totalYesEl.textContent = String(totalYes);
+      scoreRing.style.setProperty("--p", `${Math.round((totalYes/50)*360)}deg`);
+
+      overallEval.textContent = overallText(adhdYes, autYes, othYes);
+
+      resultCards.innerHTML = "";
+      resultCards.appendChild(makeMiniCard(
+        "ADHD-like signal",
+        `${adhdYes}/30 Yes`,
+        segmentPct(adhdYes, 30),
+        interpretADHD(adhdYes)
+      ));
+      resultCards.appendChild(makeMiniCard(
+        "Autism/Asperger-like signal",
+        `${autYes}/10 Yes`,
+        segmentPct(autYes, 10),
+        interpretAutism(autYes)
+      ));
+      resultCards.appendChild(makeMiniCard(
+        "Other explanations signal",
+        `${othYes}/10 Yes`,
+        segmentPct(othYes, 10),
+        interpretOther(othYes)
+      ));
+
+      // Show a short “pattern note”
+      const note = patternNote(adhdYes, autYes, othYes);
+      resultCards.appendChild(makeMiniCard("Pattern note", "", 0, note, true));
+
+      // save finished marker (still session-only)
+      run.finishedAt = Date.now();
+      saveRun(run);
+    }
+
+    function segmentPct(v, max){ return Math.round((v/max)*100); }
+
+    function makeMiniCard(title, subtitle, pct, body, noSeg=false){
+      const div = document.createElement("div");
+      div.className = "miniCard";
+      const h = document.createElement("h4");
+      h.textContent = title;
+      const p = document.createElement("p");
+      p.textContent = body;
+      div.appendChild(h);
+      if(subtitle){
+        const s = document.createElement("p");
+        s.style.marginTop = "2px";
+        s.style.color = "rgba(11,16,32,.62)";
+        s.textContent = subtitle;
+        div.appendChild(s);
+      }
+      div.appendChild(p);
+      if(!noSeg){
+        const seg = document.createElement("div");
+        seg.className = "seg";
+        const i = document.createElement("i");
+        i.style.setProperty("--w", `${pct}%`);
+        seg.style.setProperty("--w", `${pct}%`);
+        seg.appendChild(i);
+        seg.style.setProperty("--w", `${pct}%`);
+        i.style.setProperty("--w", `${pct}%`);
+        seg.style.setProperty("--w", `${pct}%`);
+        i.style.width = `${pct}%`;
+        div.appendChild(seg);
+      }
+      return div;
+    }
+
+    function overallText(adhdYes, autYes, othYes){
+      // keep it short, no diagnosis claims
+      const a = interpretADHD(adhdYes);
+      const s = interpretAutism(autYes);
+      const o = interpretOther(othYes);
+      return `ADHD: ${a} • Autism: ${s} • Other: ${o}`;
+    }
+
+    function interpretADHD(n){
+      if(n <= 6) return "low signal";
+      if(n <= 12) return "moderate signal";
+      return "high signal";
+    }
+    function interpretAutism(n){
+      if(n <= 2) return "low signal";
+      if(n <= 5) return "moderate signal";
+      return "high signal";
+    }
+    function interpretOther(n){
+      if(n <= 2) return "low signal";
+      if(n <= 5) return "moderate signal";
+      return "high signal";
+    }
+
+    function patternNote(adhdYes, autYes, othYes){
+      // Simple guidance text (not medical advice wording)
+      const parts = [];
+      if(othYes >= 6) parts.push("Many items point to non-ADHD factors (sleep, mood, anxiety, stress responses). A careful differential check matters.");
+      if(adhdYes >= 13 && othYes <= 3) parts.push("The strongest signal is in the ADHD-like items with fewer competing explanations.");
+      if(autYes >= 6) parts.push("The autism/Asperger-like items are prominent; masking and overload patterns may be relevant.");
+      if(parts.length === 0) parts.push("Signals look mixed or low. If daily impairment remains, track patterns over time and consider a structured evaluation.");
+      return parts.join(" ");
+    }
+
+    function setupStartModal(){
+      const existing = loadRun();
+      if(existing && existing.order && existing.order.length === BANK.length){
+        run = existing;
+        restartBtn.style.display = "block";
+        startTitle.textContent = "Resume the run";
+        const stageIdx = Math.floor(run.idx/10) + 1;
+        const pos = (run.idx % 10) + 1;
+        startSubtitle.textContent = `Resume at Stage ${stageIdx}/5 • Question ${pos}/10 • Sound + music unlocks after Start`;
+        startBtn.textContent = "Resume";
+      }else{
+        run = null;
+        restartBtn.style.display = "none";
+        startTitle.textContent = "Start the run";
+        startSubtitle.textContent = "5 stages • 10 questions each • Yes / No only";
+        startBtn.textContent = "Start";
+      }
+      startModal.classList.add("show");
+    }
+
+    async function startOrResume(){
+      if(!run) run = makeNewRun();
+      // sound preference
+      audioEnabled = run.sound !== false;
+      soundIcon.textContent = audioEnabled ? "🔊" : "🔇";
+
+      // Unlock audio on user gesture
+      await unlockAudio();
+
+      // iOS “Start” primes audio and allows background synth
+      startModal.classList.remove("show");
+
+      runUI.style.display = "";
+      questionCard.style.display = "";
+      results.classList.remove("show");
+
+      updateUI();
+      if(audioEnabled) startMusicForStage(currentStage());
+      saveRun(run);
+    }
+
+    function restart(){
+      clearRun();
+      stopMusic();
+      run = makeNewRun();
+      audioEnabled = true;
+      saveRun(run);
+      startTitle.textContent = "Start the run";
+      startSubtitle.textContent = "5 stages • 10 questions each • Yes / No only";
+      startBtn.textContent = "Start";
+      restartBtn.style.display = "none";
+      startModal.classList.add("show");
+    }
+
+    function runAgain(){
+      restart();
+    }
+
+    async function share(){
+      playSfx("tap");
+      const yesIds = Object.keys(run.answers).filter(k=>run.answers[k]===true);
+      const totalYes = yesIds.length;
+      const adhdYes = yesIds.filter(id => getQuestionById(id)?.domain === "adhd").length;
+      const autYes  = yesIds.filter(id => getQuestionById(id)?.domain === "autism").length;
+      const othYes  = yesIds.filter(id => getQuestionById(id)?.domain === "other").length;
+
+      const text = `Brain Quest results: total Yes ${totalYes}/50. ADHD-like ${adhdYes}/30, Autism-like ${autYes}/10, Other ${othYes}/10.`;
+      try{
+        if(navigator.share){
+          await navigator.share({title:"Brain Quest", text});
+        }else{
+          await navigator.clipboard.writeText(text);
+          showToast("Copied summary");
+        }
+      }catch(e){
+        try{
+          await navigator.clipboard.writeText(text);
+          showToast("Copied summary");
+        }catch(_){}
+      }
+    }
+
+    /**********************************************************************
+     * Events
+     **********************************************************************/
+    yesBtn.addEventListener("click", ()=>answerCurrent(true));
+    noBtn.addEventListener("click", ()=>answerCurrent(false));
+    backBtn.addEventListener("click", goBack);
+    reviewBtn.addEventListener("click", review);
+
+    startBtn.addEventListener("click", startOrResume);
+    restartBtn.addEventListener("click", restart);
+
+    againBtn.addEventListener("click", runAgain);
+    shareBtn.addEventListener("click", share);
+
+    soundBtn.addEventListener("click", ()=>{
+      if(!run) return;
+      setSound(!audioEnabled);
+      playSfx("tap");
+    });
+
+    // If the tab goes background, stop music to be polite; resume on focus.
+    document.addEventListener("visibilitychange", ()=>{
+      if(document.hidden) stopMusic();
+      else if(run && audioReady && audioEnabled && run.idx < run.order.length) startMusicForStage(currentStage());
+    });
+
+    /**********************************************************************
+     * Boot
+     **********************************************************************/
+    (function boot(){
+      // Always start behind the start modal (audio unlock).
+      // If run is already finished, show start modal and allow restart.
+      const existing = loadRun();
+      if(existing && existing.finishedAt){
+        // keep finished run in session (optional) but start fresh UI
+        runUI.style.display = "none";
+        questionCard.style.display = "none";
+        results.classList.remove("show");
+      }
+      setupStartModal();
+    })();
+  </script>
+</body>
+</html>
