@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Brain Quest</title>
+<style>
+  :root{
+    --bg1:#ffe6f3;
+    --bg2:#e7f7ff;
+    --card:#ffffffee;
+    --text:#2b2b2b;
+    --muted:#7a7a7a;
+    --pink:#ff7fc8;
+    --blue:#7ad7ff;
+    --mint:#7dffca;
+    --rose:#ff9bb8;
+    --shadow: 0 18px 50px rgba(0,0,0,.12);
+    --r: 26px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: ui-rounded, "Comic Neue", system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    color:var(--text);
+    background: linear-gradient(180deg, var(--bg1), var(--bg2));
+    overflow-x:hidden;
+  }
+
+  .app{
+    max-width:520px;
+    margin:0 auto;
+    min-height:100vh;
+    padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .top{
+    text-align:center;
+    padding-top:10px;
+  }
+  .title{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    font-weight:900;
+    letter-spacing:.2px;
+    font-size:24px;
+    margin:0;
+  }
+  .subtitle{
+    margin:6px 0 0;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .hud{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:999px;
+    background: rgba(255,255,255,.65);
+    box-shadow: 0 10px 26px rgba(0,0,0,.06);
+    backdrop-filter: blur(8px);
+  }
+  .hud .left, .hud .right{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    color:var(--muted); font-size:12px;
+  }
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 10px;
+    border-radius:999px;
+    background: #fff;
+    border:1px solid rgba(0,0,0,.06);
+    white-space:nowrap;
+  }
+  .miniBtn{
+    border:none;
+    background:#fff;
+    border:1px solid rgba(0,0,0,.06);
+    border-radius:999px;
+    padding:8px 10px;
+    font-weight:800;
+    cursor:pointer;
+  }
+  .miniBtn:active{transform:scale(.98)}
+  .bar{
+    height:10px;
+    background: rgba(0,0,0,.06);
+    border-radius:999px;
+    overflow:hidden;
+    flex:1;
+    min-width:110px;
+  }
+  .bar > div{
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg, var(--pink), var(--blue));
+    transition: width .25s ease;
+  }
+
+  .main{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 8px 0 0;
+  }
+
+  .card{
+    width:100%;
+    background: var(--card);
+    border-radius: var(--r);
+    box-shadow: var(--shadow);
+    padding: 22px 18px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .sticker{
+    position:absolute;
+    right:14px; top:14px;
+    font-size:12px;
+    font-weight:900;
+    padding:8px 10px;
+    border-radius:999px;
+    background: linear-gradient(90deg, rgba(255,127,200,.18), rgba(122,215,255,.18));
+    border:1px solid rgba(0,0,0,.06);
+  }
+
+  .q{
+    font-size:20px;
+    line-height:1.45;
+    font-weight:850;
+    margin: 10px 0 0;
+  }
+  .hint{
+    margin: 14px 0 0;
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.4;
+  }
+
+  .bottom{
+    position: sticky;
+    bottom: 0;
+    padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,.95) 38%);
+  }
+
+  .btnRow{
+    display:flex;
+    gap:12px;
+  }
+  .btn{
+    flex:1;
+    border:none;
+    border-radius: 999px;
+    padding: 16px 0;
+    font-size:20px;
+    font-weight:950;
+    cursor:pointer;
+    box-shadow: 0 14px 30px rgba(0,0,0,.10);
+    letter-spacing:.2px;
+  }
+  .btn:active{transform:scale(.98)}
+  .yes{background: linear-gradient(180deg, rgba(125,255,202,1), rgba(85,235,175,1));}
+  .no{background: linear-gradient(180deg, rgba(255,155,184,1), rgba(255,125,155,1));}
+  .btn span{filter: drop-shadow(0 6px 10px rgba(0,0,0,.12));}
+
+  .overlay{
+    position:fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding: 18px;
+    background: rgba(0,0,0,.25);
+    backdrop-filter: blur(10px);
+    z-index:999;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    width:min(520px, 100%);
+    background:#fff;
+    border-radius: 28px;
+    padding: 18px 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.22);
+    text-align:center;
+  }
+  .modal h2{
+    margin: 4px 0 8px;
+    font-size: 26px;
+    font-weight: 950;
+  }
+  .modal p{
+    margin: 0 0 14px;
+    color: var(--muted);
+    line-height: 1.45;
+    font-size: 14px;
+  }
+  .modal .modalBtn{
+    width:100%;
+    border:none;
+    border-radius:999px;
+    padding:14px 0;
+    font-size:18px;
+    font-weight:950;
+    cursor:pointer;
+    background: linear-gradient(90deg, rgba(255,127,200,.25), rgba(122,215,255,.25));
+    border:1px solid rgba(0,0,0,.06);
+  }
+  .modal .modalBtn:active{transform:scale(.99)}
+
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom: 96px;
+    transform:translateX(-50%);
+    padding:10px 14px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid rgba(0,0,0,.06);
+    box-shadow: 0 16px 40px rgba(0,0,0,.18);
+    font-weight:900;
+    font-size:13px;
+    opacity:0;
+    transition: .18s ease;
+    pointer-events:none;
+    z-index:1000;
+    max-width: calc(100vw - 28px);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-4px);}
+
+  canvas#fx{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:998;
+  }
+
+  .resultBig{
+    font-size:38px;
+    font-weight:1000;
+    margin: 10px 0 0;
+  }
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:10px 12px;
+    border-radius:999px;
+    font-weight:950;
+    margin-top:10px;
+    border:1px solid rgba(0,0,0,.06);
+    background: linear-gradient(90deg, rgba(255,127,200,.18), rgba(122,215,255,.18));
+  }
+
+  @media (max-width:360px){
+    .q{font-size:18px}
+    .btn{font-size:18px}
+  }
+</style>
+</head>
+
+<body>
+<canvas id="fx"></canvas>
+
+<div class="app" id="app">
+  <div class="top">
+    <h1 class="title">🧠 Brain Quest</h1>
+    <div class="subtitle">10 questions per stage · 5 stages · Yes/No only</div>
+  </div>
+
+  <div class="hud">
+    <div class="left">
+      <div class="chip" id="stageChip">Stage 1 / 5</div>
+      <div class="chip" id="qChip">Q 1 / 10</div>
+    </div>
+    <div class="right">
+      <div class="bar" aria-hidden="true"><div id="barFill"></div></div>
+      <button class="miniBtn" id="soundBtn" type="button" aria-label="Toggle sound effects">🔊</button>
+      <button class="miniBtn" id="musicBtn" type="button" aria-label="Toggle music">🎵</button>
+      <button class="miniBtn" id="resetBtn" type="button">Reset</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="card" id="card">
+      <div class="sticker" id="sticker">✨ Ready</div>
+      <div class="q" id="qText">Loading questions...</div>
+      <div class="hint" id="hintText">
+        Golden rule: if you're hesitant, if it's "sometimes", or if you're not 100% sure, answer No.
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="btnRow">
+      <button class="btn yes" id="yesBtn" type="button"><span>YES 👍</span></button>
+      <button class="btn no" id="noBtn" type="button"><span>NO 👎</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <h2 id="modalTitle">✨ Start the run?</h2>
+    <p id="modalDesc">Tap Start to enable music and sound effects.</p>
+    <button class="modalBtn" id="modalBtn" type="button">Start!</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================
+   Fetch q.json (GitHub Pages compatible)
+   Place q.json in the same folder as this HTML.
+   ========================================= */
+async function loadAssessment(){
+  const res = await fetch("./q.json", { cache: "no-store" });
+  if(!res.ok){
+    throw new Error("Failed to load q.json");
+  }
+  return await res.json();
+}
+</script>
+
+<script>
+/* =========================================
+   Session-only progress storage
+   ========================================= */
+const STORAGE_KEY = "brain_quest_session_v2";
+
+function loadState(){
+  try{
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    if(!s || !Array.isArray(s.order) || typeof s.idx !== "number") return null;
+    return s;
+  }catch{return null;}
+}
+function saveState(s){ sessionStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+function clearState(){ sessionStorage.removeItem(STORAGE_KEY); }
+
+/* =========================================
+   Helpers
+   ========================================= */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[c]));
+}
+
+/* =========================================
+   Cute stage skins (no symptom labels)
+   ========================================= */
+const STAGE_SKINS = [
+  {name:"Neon Bunnies",   sticker:"🐰✨", bg1:"#ffe6f3", bg2:"#e7f7ff", tempo:300},
+  {name:"Candy Clouds",   sticker:"🍬☁️", bg1:"#fff1dc", bg2:"#e8f7ff", tempo:290},
+  {name:"Star Sprinkles", sticker:"🌟🍩", bg1:"#f3e8ff", bg2:"#e8fff7", tempo:280},
+  {name:"Bubble Boost",   sticker:"🫧🚀", bg1:"#e8fff7", bg2:"#ffe9f4", tempo:260},
+  {name:"Final Plush",    sticker:"🧸👑", bg1:"#ffe9f4", bg2:"#e9f6ff", tempo:240},
+];
+
+/* =========================================
+   FX canvas
+   ========================================= */
+const canvas = document.getElementById("fx");
+const ctx = canvas.getContext("2d");
+let parts = [];
+let raf = null;
+
+function resize(){
+  canvas.width = Math.floor(innerWidth * devicePixelRatio);
+  canvas.height = Math.floor(innerHeight * devicePixelRatio);
+  canvas.style.width = innerWidth+"px";
+  canvas.style.height = innerHeight+"px";
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+}
+addEventListener("resize", resize);
+resize();
+
+function popFX(intensity){
+  const x = innerWidth/2 + (Math.random()*80-40);
+  const y = innerHeight*0.35 + (Math.random()*60-30);
+  for(let i=0;i<intensity;i++){
+    parts.push({
+      x,y,
+      vx:(Math.random()*2-1)*6,
+      vy:(Math.random()*-1.3-0.5)*7,
+      g:0.25+Math.random()*0.12,
+      s:2+Math.random()*4,
+      a:1
+    });
+  }
+  if(!raf) loop();
+}
+function loop(){
+  raf = requestAnimationFrame(loop);
+  ctx.clearRect(0,0,innerWidth,innerHeight);
+  for(const p of parts){
+    p.vy += p.g;
+    p.x += p.vx;
+    p.y += p.vy;
+    p.a -= 0.014;
+    ctx.globalAlpha = clamp(p.a,0,1);
+    ctx.fillStyle = `hsl(${Math.floor(Math.random()*360)},90%,70%)`;
+    ctx.fillRect(p.x, p.y, p.s, p.s);
+  }
+  ctx.globalAlpha = 1;
+  parts = parts.filter(p => p.a>0 && p.y < innerHeight+60);
+  if(parts.length===0){
+    cancelAnimationFrame(raf);
+    raf=null;
+  }
+}
+
+/* =========================================
+   Audio engine
+   ========================================= */
+class AudioEngine{
+  constructor(){
+    this.ctx = null;
+    this.master = null;
+    this.musicGain = null;
+    this.sfxGain = null;
+    this.musicOn = true;
+    this.sfxOn = true;
+    this.timer = null;
+    this.step = 0;
+    this.stage = 0;
+    this.patterns = [
+      [261.63,329.63,392.00,523.25,392.00,329.63],
+      [293.66,369.99,440.00,587.33,440.00,369.99],
+      [220.00,277.18,329.63,440.00,329.63,277.18],
+      [246.94,311.13,369.99,493.88,369.99,311.13],
+      [196.00,246.94,293.66,392.00,493.88,392.00,293.66],
+    ];
+  }
+  ensure(){
+    if(!this.ctx){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AC();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = 0.9;
+      this.master.connect(this.ctx.destination);
+
+      this.musicGain = this.ctx.createGain();
+      this.musicGain.gain.value = 0.22;
+      this.musicGain.connect(this.master);
+
+      this.sfxGain = this.ctx.createGain();
+      this.sfxGain.gain.value = 0.65;
+      this.sfxGain.connect(this.master);
+    }
+    if(this.ctx.state === "suspended"){
+      this.ctx.resume();
+    }
+  }
+  setMusic(on){
+    this.musicOn = on;
+    if(!on) this.stopMusic();
+    else this.startMusic(this.stage);
+  }
+  setSfx(on){
+    this.sfxOn = on;
+    if(this.sfxGain) this.sfxGain.gain.value = on ? 0.65 : 0;
+  }
+  stopMusic(){
+    if(this.timer){
+      clearInterval(this.timer);
+      this.timer=null;
+    }
+  }
+  startMusic(stage){
+    this.ensure();
+    this.stage = stage;
+    if(!this.musicOn) return;
+    this.stopMusic();
+    this.step = 0;
+    const tempo = STAGE_SKINS[stage]?.tempo ?? 280;
+    const pat = this.patterns[stage] || this.patterns[0];
+    this.timer = setInterval(()=>{
+      if(!this.musicOn) return;
+      const f = pat[this.step % pat.length];
+      this._note(f, stage);
+      if(stage>=2 && this.step%4===0) this._tick(90,0.03);
+      this.step++;
+    }, tempo);
+  }
+  _note(freq, stage){
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+
+    osc.type = (stage%2===0) ? "triangle" : "square";
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(1200 + stage*220, now);
+
+    osc.frequency.setValueAtTime(freq, now);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.18, now+0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now+0.10);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.musicGain);
+
+    osc.start(now);
+    osc.stop(now+0.12);
+  }
+  _tick(freq,dur){
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type="sine";
+    osc.frequency.setValueAtTime(freq, now);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.06, now+0.005);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now+dur);
+    osc.connect(gain);
+    gain.connect(this.musicGain);
+    osc.start(now);
+    osc.stop(now+dur+0.01);
+  }
+  sfx(type){
+    if(!this.sfxOn) return;
+    this.ensure();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const base = type==="yes" ? 660 : 330;
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(base, now);
+    osc.frequency.exponentialRampToValueAtTime(base*1.12, now+0.06);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.28, now+0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now+0.14);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now+0.16);
+  }
+  stageClear(){
+    if(!this.sfxOn) return;
+    this.ensure();
+    const now = this.ctx.currentTime;
+    const notes = [523.25, 659.25, 783.99];
+    notes.forEach((f,i)=>{
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type="triangle";
+      osc.frequency.setValueAtTime(f, now+i*0.08);
+      gain.gain.setValueAtTime(0.0001, now+i*0.08);
+      gain.gain.exponentialRampToValueAtTime(0.30, now+i*0.08+0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now+i*0.08+0.12);
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(now+i*0.08);
+      osc.stop(now+i*0.08+0.14);
+    });
+  }
+}
+const audio = new AudioEngine();
+
+/* =========================================
+   UI refs
+   ========================================= */
+const els = {
+  stageChip: document.getElementById("stageChip"),
+  qChip: document.getElementById("qChip"),
+  barFill: document.getElementById("barFill"),
+  qText: document.getElementById("qText"),
+  hintText: document.getElementById("hintText"),
+  sticker: document.getElementById("sticker"),
+  yesBtn: document.getElementById("yesBtn"),
+  noBtn: document.getElementById("noBtn"),
+  soundBtn: document.getElementById("soundBtn"),
+  musicBtn: document.getElementById("musicBtn"),
+  resetBtn: document.getElementById("resetBtn"),
+  overlay: document.getElementById("overlay"),
+  modalBtn: document.getElementById("modalBtn"),
+  modalTitle: document.getElementById("modalTitle"),
+  modalDesc: document.getElementById("modalDesc"),
+  toast: document.getElementById("toast"),
+  card: document.getElementById("card"),
+};
+
+/* =========================================
+   Runtime-loaded assessment
+   ========================================= */
+let ASSESSMENT = null;
+let TOTAL = 0;
+const STAGES = 5;
+const PER_STAGE = 10;
+
+function qById(id){ return ASSESSMENT.questions.find(q => q.id === id); }
+
+/* =========================================
+   State
+   ========================================= */
+function freshState(){
+  const ids = ASSESSMENT.questions.map(q=>q.id);
+  const order = shuffle(ids);
+  return {
+    order,
+    idx: 0,                 // overall 0..TOTAL-1
+    answers: {},            // id -> "Yes"|"No"
+    yesCount: 0,
+    started: false
+  };
+}
+let state = null;
+
+/* =========================================
+   Toast
+   ========================================= */
+let toastT = null;
+function toast(msg){
+  els.toast.textContent = msg;
+  els.toast.classList.add("show");
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>els.toast.classList.remove("show"), 1100);
+}
+
+/* =========================================
+   Skin
+   ========================================= */
+function applySkin(stageIdx){
+  const s = STAGE_SKINS[stageIdx] || STAGE_SKINS[0];
+  document.body.style.background = `linear-gradient(180deg, ${s.bg1}, ${s.bg2})`;
+  els.sticker.textContent = `${s.sticker} ${s.name}`;
+}
+
+/* =========================================
+   Rendering
+   ========================================= */
+function currentStage(){ return Math.floor(state.idx / PER_STAGE); }
+function idxInStage(){ return (state.idx % PER_STAGE) + 1; }
+
+function render(){
+  const st = currentStage();
+  const inSt = idxInStage();
+
+  applySkin(st);
+
+  els.stageChip.textContent = `Stage ${st+1} / ${STAGES}`;
+  els.qChip.textContent = `Q ${inSt} / ${PER_STAGE}`;
+  els.barFill.style.width = `${((inSt-1)/PER_STAGE)*100}%`;
+
+  const qid = state.order[state.idx];
+  const q = qById(qid);
+  els.qText.textContent = q ? q.text : "Loading...";
+  els.hintText.textContent = "Golden rule: if you're hesitant, if it's \"sometimes\", or if you're not 100% sure, answer No.";
+}
+
+/* =========================================
+   Stage gate
+   ========================================= */
+function showGate(title, desc, btnText="Continue"){
+  els.modalTitle.textContent = title;
+  els.modalDesc.textContent = desc;
+  els.modalBtn.textContent = btnText;
+  els.overlay.classList.add("show");
+}
+function hideGate(){
+  els.overlay.classList.remove("show");
+}
+
+/* =========================================
+   Result
+   ========================================= */
+function interpretation(yes){
+  if(yes <= 10) return ASSESSMENT.scoring_guide.thresholds["0-10"];
+  if(yes <= 20) return ASSESSMENT.scoring_guide.thresholds["11-20"];
+  return ASSESSMENT.scoring_guide.thresholds["21+"];
+}
+
+function showResult(){
+  audio.stopMusic();
+  popFX(90);
+  toast("Results unlocked!");
+  const yes = state.yesCount;
+
+  els.card.innerHTML = `
+    <div class="sticker">${STAGE_SKINS[4].sticker} Finished</div>
+    <div class="q">All done!</div>
+    <div class="resultBig">${yes} / ${TOTAL}</div>
+    <div class="badge">Total "Yes"</div>
+    <div class="hint" style="margin-top:14px; font-size:14px; color:var(--muted);">
+      ${escapeHtml(interpretation(yes))}
+    </div>
+    <div style="margin-top:16px; display:grid; gap:10px;">
+      <button class="modalBtn" id="againBtn" type="button">Play again</button>
+      <button class="modalBtn" id="reviewBtn" type="button">Review answers</button>
+    </div>
+    <div id="reviewBox" style="display:none; margin-top:16px; text-align:left;"></div>
+  `;
+
+  const againBtn = document.getElementById("againBtn");
+  const reviewBtn = document.getElementById("reviewBtn");
+  const reviewBox = document.getElementById("reviewBox");
+
+  againBtn.onclick = () => { clearState(); location.reload(); };
+
+  reviewBtn.onclick = () => {
+    const open = reviewBox.style.display !== "none";
+    reviewBox.style.display = open ? "none" : "block";
+    reviewBtn.textContent = open ? "Review answers" : "Hide review";
+    if(!open){
+      const lines = state.order.map((id, i)=>{
+        const q = qById(id);
+        const a = state.answers[id] || "—";
+        const color = a==="Yes" ? "#13a76a" : (a==="No" ? "#d74b6a" : "#888");
+        return `<div style="padding:10px 10px; border-radius:16px; background:rgba(0,0,0,.04); margin-bottom:10px;">
+          <div style="font-weight:900; color:${color};">${i+1}. ${a}</div>
+          <div style="margin-top:6px; line-height:1.35;">${escapeHtml(q?.text || "")}</div>
+        </div>`;
+      }).join("");
+      reviewBox.innerHTML = lines;
+    }
+  };
+
+  els.yesBtn.disabled = true;
+  els.noBtn.disabled = true;
+  els.yesBtn.style.opacity = 0.55;
+  els.noBtn.style.opacity = 0.55;
+}
+
+/* =========================================
+   Answer flow
+   - ensures audio is enabled on first user tap
+   - first Yes/No tap counts as the first answer (no “dead tap”)
+   ========================================= */
+function answer(ans){
+  // Ensure audio runs on first interaction
+  if(!state.started){
+    audio.ensure();
+    state.started = true;
+    saveState(state);
+    audio.startMusic(currentStage());
+    hideGate();
+    toast("Audio enabled!");
+    // DO NOT return — the first tap should count as an answer
+  }
+
+  const qid = state.order[state.idx];
+  const prev = state.answers[qid];
+
+  if(prev === "Yes") state.yesCount -= 1;
+  if(ans === "Yes") state.yesCount += 1;
+  state.answers[qid] = ans;
+
+  audio.sfx(ans === "Yes" ? "yes" : "no");
+  popFX(ans === "Yes" ? 14 : 10);
+  toast(ans === "Yes" ? "Nice!" : "Strict mode!");
+
+  const wasStage = currentStage();
+  state.idx += 1;
+
+  if(state.idx >= TOTAL){
+    saveState(state);
+    showResult();
+    return;
+  }
+
+  const nowStage = currentStage();
+
+  if(nowStage !== wasStage){
+    saveState(state);
+    audio.stageClear();
+    popFX(70);
+    audio.startMusic(nowStage);
+    showGate(`✨ Stage ${wasStage+1} cleared!`, `Ready for Stage ${nowStage+1}?`, "Go!");
+    return;
+  }
+
+  saveState(state);
+  render();
+}
+
+/* =========================================
+   Buttons
+   ========================================= */
+els.yesBtn.addEventListener("click", ()=>answer("Yes"));
+els.noBtn.addEventListener("click", ()=>answer("No"));
+
+els.soundBtn.addEventListener("click", ()=>{
+  audio.ensure();
+  audio.setSfx(!audio.sfxOn);
+  els.soundBtn.textContent = audio.sfxOn ? "🔊" : "🔇";
+  toast(audio.sfxOn ? "SFX on" : "SFX off");
+});
+
+els.musicBtn.addEventListener("click", ()=>{
+  audio.ensure();
+  audio.setMusic(!audio.musicOn);
+  els.musicBtn.textContent = audio.musicOn ? "🎵" : "🚫🎵";
+  toast(audio.musicOn ? "Music on" : "Music off");
+});
+
+els.resetBtn.addEventListener("click", ()=>{
+  clearState();
+  toast("Session cleared");
+  location.reload();
+});
+
+els.modalBtn.addEventListener("click", ()=>{
+  if(!state.started){
+    audio.ensure();
+    state.started = true;
+    saveState(state);
+    audio.startMusic(currentStage());
+    hideGate();
+    toast("Let’s go!");
+    render();
+  }else{
+    hideGate();
+    render();
+  }
+});
+
+/* =========================================
+   Boot
+   ========================================= */
+(async function boot(){
+  try{
+    ASSESSMENT = await loadAssessment();
+    if(!ASSESSMENT || !Array.isArray(ASSESSMENT.questions) || ASSESSMENT.questions.length === 0){
+      throw new Error("Invalid q.json");
+    }
+
+    TOTAL = ASSESSMENT.questions.length;
+
+    // enforce 5 stages of 10 questions
+    if(TOTAL !== 50){
+      // still works, but UI assumes 5x10. Clamp in case.
+      // (No throw — keep running)
+    }
+
+    state = loadState();
+    if(!state || !Array.isArray(state.order) || state.order.length !== TOTAL){
+      state = freshState();
+      saveState(state);
+    }
+
+    // Show content immediately
+    render();
+
+    // Gate is used to ensure at least one explicit tap for audio on mobile
+    if(state.idx >= TOTAL){
+      showResult();
+      return;
+    }
+    showGate(
+      state.started ? "✨ Resume?" : "✨ Start the run?",
+      state.started
+        ? "Tap Continue to re-enable audio on mobile and keep going."
+        : "Tap Start to enable music and sound effects.",
+      state.started ? "Continue" : "Start!"
+    );
+  }catch(err){
+    els.qText.textContent = "Could not load q.json. Make sure q.json is in the same folder as this HTML.";
+    els.hintText.textContent = String(err);
+    showGate("Oops!", "q.json could not be loaded. Check file name and location.", "OK");
+    els.modalBtn.onclick = () => hideGate();
+  }
+})();
+</script>
+</body>
+</html>
