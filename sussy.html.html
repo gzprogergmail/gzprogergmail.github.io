@@ -1,0 +1,1552 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>Brain Quest • Adaptive 5×6</title>
+  <style>
+    :root{
+      --bg1:#f7fbff;
+      --bg2:#f2f7ff;
+      --ink:#0b1020;
+      --muted:rgba(11,16,32,.62);
+      --card:#ffffff;
+      --stroke:rgba(11,16,32,.10);
+      --shadow:0 18px 55px rgba(11,16,32,.12);
+      --accent:#7ea6ff;
+      --accent2:#c7d6ff;
+      --yes:#4fd3a7;
+      --no:#ffb35a;
+      --radius:22px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --dock-h: 164px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--ink);
+      background:
+        radial-gradient(1200px 800px at 10% -10%, rgba(126,166,255,.20), transparent 55%),
+        radial-gradient(900px 700px at 100% 10%, rgba(214,231,255,.34), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+    }
+    .wrap{
+      max-width: 440px;
+      margin: 0 auto;
+      min-height:100%;
+      padding: calc(var(--safe-top) + 14px) 14px calc(var(--safe-bottom) + 18px + var(--dock-h));
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .brand{display:flex;align-items:center;gap:10px;}
+    .orb{
+      width:34px;height:34px;border-radius:14px;
+      background: radial-gradient(circle at 30% 30%, #ffffff, rgba(126,166,255,.65) 55%, rgba(126,166,255,.35));
+      border:1px solid rgba(11,16,32,.10);
+      box-shadow: 0 10px 25px rgba(126,166,255,.18);
+      position:relative; overflow:hidden; flex:0 0 auto;
+    }
+    .orb::after{
+      content:"";
+      position:absolute; inset:-40%;
+      background: radial-gradient(circle at 20% 20%, rgba(255,255,255,.9), transparent 45%);
+      transform: rotate(15deg); opacity:.55;
+    }
+    .brandTitle{display:flex;flex-direction:column;line-height:1.05;}
+    .brandTitle b{font-size:14px;letter-spacing:.2px}
+    .brandTitle span{font-size:12px;color:var(--muted)}
+
+    .pillbar{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap;}
+    .pill{
+      padding:8px 10px;border-radius:999px;border:1px solid rgba(11,16,32,.10);
+      background: rgba(255,255,255,.72);backdrop-filter: blur(10px);
+      font-size:12px;color:rgba(11,16,32,.72);user-select:none;
+    }
+    .pill.clickable{cursor:pointer}
+
+    .progress{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      padding: 10px 12px;border-radius:16px;border:1px solid rgba(11,16,32,.10);
+      background: rgba(255,255,255,.72);backdrop-filter: blur(10px);
+    }
+    .progressRow{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:rgba(11,16,32,.74);}
+    .bar{height:10px;border-radius:999px;background: rgba(11,16,32,.07);overflow:hidden;}
+    .bar > i{display:block;height:100%;width:0%;background: linear-gradient(90deg, rgba(126,166,255,.90), rgba(79,211,167,.90));border-radius:999px;transition: width .35s ease;}
+
+    .card{
+      background: var(--card);
+      border: 1px solid rgba(11,16,32,.10);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .cardInner{padding: 18px 16px 16px;}
+    .qTag{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+    .stageTag{font-size:12px;color:rgba(11,16,32,.72);padding:7px 10px;border-radius:999px;border:1px solid rgba(11,16,32,.10);background: rgba(126,166,255,.10);}
+    .countTag{font-size:12px;color:rgba(11,16,32,.72);}
+
+    .qText{font-size:18px;line-height:1.25;letter-spacing:-.2px;margin:4px 0 12px;}
+    .helper{font-size:12px;color: rgba(11,16,32,.62);line-height:1.35;}
+
+    .dock{
+      position:fixed; left:0; right:0; bottom:0;
+      padding: 10px 14px calc(var(--safe-bottom) + 12px);
+      background: linear-gradient(180deg, rgba(247,251,255,0), rgba(247,251,255,.82) 22%, rgba(247,251,255,.95));
+      backdrop-filter: blur(14px);
+      z-index: 20;
+    }
+    .dockInner{max-width: 440px; margin: 0 auto; display:flex; flex-direction:column; gap:10px;}
+    .ctaRow{display:flex; gap:10px;}
+    .btn{
+      flex:1;
+      border:1px solid rgba(11,16,32,.10);
+      border-radius: 18px;
+      padding: 16px 12px;
+      font-size: 15px;
+      font-weight: 950;
+      letter-spacing:.2px;
+      color: rgba(11,16,32,.90);
+      box-shadow: 0 12px 28px rgba(11,16,32,.10);
+      transition: transform .10s ease, box-shadow .20s ease, filter .20s ease;
+      touch-action: manipulation;
+      position:relative; overflow:hidden;
+    }
+    .btn::after{
+      content:"";
+      position:absolute; inset:-40%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.85), transparent 42%);
+      opacity:0; transform: scale(.9);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+    .btn.pulse{transform: translateY(1px) scale(.995); filter: brightness(1.02); box-shadow: 0 8px 18px rgba(11,16,32,.10);}
+    .btn.pulse::after{opacity:.85; transform: scale(1.05);}
+    .btnYes{background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(79,211,167,.26));}
+    .btnNo{background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,179,90,.26));}
+    .miniRow{display:flex; gap:10px;}
+    .miniBtn{
+      flex:1;
+      border:1px solid rgba(11,16,32,.10);
+      background: rgba(255,255,255,.78);
+      border-radius: 16px;
+      padding: 12px 12px;
+      font-weight: 900;
+      font-size: 12px;
+      color: rgba(11,16,32,.76);
+      touch-action: manipulation;
+    }
+
+    .modalOverlay{position:fixed; inset:0; background: rgba(11,16,32,.40); display:none; align-items:flex-end; justify-content:center; padding: 12px 14px calc(var(--safe-bottom) + 14px); z-index: 50;}
+    .modalOverlay.show{display:flex}
+    .modal{
+      width:min(440px, 100%);
+      border-radius: 26px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.86);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 30px 90px rgba(11,16,32,.30);
+    }
+    .modalTop{padding: 18px 16px 0;}
+    .modalTop h1{margin:0;font-size:18px;letter-spacing:-.2px;}
+    .modalTop p{margin:8px 0 0;color: rgba(11,16,32,.68);font-size:12px;line-height:1.35;}
+    .rules{margin: 14px 16px 0; border-radius: 18px; border:1px solid rgba(11,16,32,.10); background: rgba(255,255,255,.78); padding: 12px 12px; font-size: 12px; color: rgba(11,16,32,.72); line-height:1.35;}
+    .rules b{color: rgba(11,16,32,.88)}
+    .modalCta{display:flex;gap:10px;padding: 14px 16px 16px;}
+    .primary{flex:1;border:none;border-radius:18px;padding:16px 12px;font-size:15px;font-weight:950;letter-spacing:.2px; color: rgba(11,16,32,.92); background: linear-gradient(180deg, rgba(126,166,255,.85), rgba(199,214,255,.85)); box-shadow: 0 16px 40px rgba(126,166,255,.22); touch-action: manipulation;}
+    .secondary{flex:1;border:1px solid rgba(11,16,32,.10);border-radius:18px;padding:16px 12px;font-size:14px;font-weight:900; color: rgba(11,16,32,.78);background: rgba(255,255,255,.82);touch-action: manipulation;}
+
+    .celebrate{position: fixed; inset: 0; display:none; align-items:center; justify-content:center; z-index: 40; pointer-events:none;}
+    .celebrate.show{display:flex}
+    .celebrateCard{
+      width: min(420px, 92%);
+      border-radius: 26px;
+      padding: 16px 14px;
+      background: rgba(255,255,255,.90);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(11,16,32,.10);
+      box-shadow: 0 30px 90px rgba(11,16,32,.20);
+      text-align:center;
+    }
+    .celebrateCard h2{ margin: 4px 0 0; font-size: 18px; letter-spacing:-.2px; }
+    .celebrateCard p{ margin: 8px 0 0; font-size: 12px; color: rgba(11,16,32,.68); }
+    .badge{display:inline-block;margin-top:10px;padding:8px 10px;border-radius:999px;font-size:12px;font-weight:950;border:1px solid rgba(11,16,32,.10);background: rgba(79,211,167,.16);color: rgba(11,16,32,.78);}
+
+    .results{ display:none; }
+    .results.show{ display:block; }
+
+    .scoreHero{padding: 16px 16px 0;}
+    .overview{margin-top:10px; padding: 12px 12px; border-radius: 18px; border:1px solid rgba(11,16,32,.10); background: rgba(255,255,255,.78);}
+    .overview p{margin:0; font-size:13px; line-height:1.35;}
+    .overview p + p{margin-top:8px;}
+    .overview b{color: rgba(11,16,32,.92);}
+
+    .scoreRow{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .ring{width:86px;height:86px;border-radius:999px;background: conic-gradient(rgba(126,166,255,.92) var(--p, 0deg), rgba(11,16,32,.08) 0);display:flex;align-items:center;justify-content:center;border:1px solid rgba(11,16,32,.10);}
+    .ringInner{width:66px;height:66px;border-radius:999px;background: rgba(255,255,255,.92);border:1px solid rgba(11,16,32,.10);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;}
+    .ringInner b{font-size:18px}
+    .ringInner span{font-size:11px;color:rgba(11,16,32,.62)}
+
+    .evalBox{flex:1;border-radius:18px;border:1px solid rgba(11,16,32,.10);background: rgba(255,255,255,.78);padding: 12px 12px;font-size: 12px;color: rgba(11,16,32,.70);line-height:1.35;}
+    .evalBox b{ color: rgba(11,16,32,.88)}
+
+    .grid{padding: 14px 16px 16px;display:flex;flex-direction:column;gap:10px;}
+    .miniCard{border-radius: 18px;border:1px solid rgba(11,16,32,.10);background: rgba(255,255,255,.88);padding: 12px 12px;}
+    .miniCard h4{ margin:0; font-size: 13px; }
+    .miniCard .sub{ margin: 6px 0 0; font-size: 12px; color: rgba(11,16,32,.66); line-height:1.35; }
+    .spark{ margin-top:10px; height:10px; border-radius:999px; background: rgba(11,16,32,.07); overflow:hidden;}
+    .spark > i{display:block;height:100%;width:0%;background: linear-gradient(90deg, rgba(79,211,167,.95), rgba(126,166,255,.95));}
+    .inlineNotice{margin-top:10px;padding: 10px 10px;border-radius: 16px;border:1px solid rgba(11,16,32,.10);background: rgba(126,166,255,.08);font-size: 12px;color: rgba(11,16,32,.70);line-height:1.35;}
+
+    .sourceList{margin-top:10px;font-size:11px;color: rgba(11,16,32,.58);line-height:1.35;}
+    .sourceList a{ color: rgba(11,16,32,.68); text-decoration: none; border-bottom: 1px solid rgba(11,16,32,.18); }
+
+    .toast{position: fixed; left:50%; transform: translateX(-50%); bottom: calc(var(--safe-bottom) + var(--dock-h) + 8px); background: rgba(255,255,255,.90); border:1px solid rgba(11,16,32,.10); border-radius: 999px; padding: 10px 12px; font-size: 12px; color: rgba(11,16,32,.76); box-shadow: 0 18px 50px rgba(11,16,32,.20); opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease; z-index: 60;}
+    .toast.show{ opacity:1; transform: translateX(-50%) translateY(-6px); }
+
+    canvas#fx{ position: fixed; inset: 0; pointer-events:none; z-index: 39; }
+  </style>
+</head>
+<body>
+  <canvas id="fx"></canvas>
+
+  <div class="wrap" id="app">
+    <div class="topbar">
+      <div class="brand">
+        <div class="orb"></div>
+        <div class="brandTitle">
+          <b>Brain Quest</b>
+          <span>adaptive, calm, mobile-first</span>
+        </div>
+      </div>
+      <div class="pillbar">
+        <div class="pill">XP <b id="xpVal">0</b></div>
+        <div class="pill clickable" id="audioPill">Sound <b id="audioState">Off</b></div>
+      </div>
+    </div>
+
+    <div class="progress" id="runUI">
+      <div class="progressRow">
+        <span id="stageLabel">Stage 1/5</span>
+        <span><b id="qIndex">1</b>/<span id="qInStage">6</span></span>
+      </div>
+      <div class="bar"><i id="barFill"></i></div>
+    </div>
+
+    <section class="card" id="questionCard">
+      <div class="cardInner">
+        <div class="qTag">
+          <div class="stageTag" id="themeTag">Soft Bloom</div>
+          <div class="countTag" id="tinyHint">Yes/No only</div>
+        </div>
+        <div class="qText" id="questionText">…</div>
+        <div class="helper" id="helperText">Strict rule: If you are not 100% sure, answer No.</div>
+      </div>
+    </section>
+
+    <section class="results" id="results">
+      <section class="card">
+        <div class="scoreHero">
+          <div class="scoreRow">
+            <div class="ring" id="scoreRing" style="--p:0deg;">
+              <div class="ringInner">
+                <b id="totalYes">0</b>
+                <span>Yes</span>
+              </div>
+            </div>
+            <div class="evalBox">
+              <b id="overallEval">—</b><br/>
+              <span id="overallHint">Saved in session storage (this tab only).</span>
+            </div>
+          </div>
+
+          <div class="overview" id="overviewBox">
+            <p id="ov1"></p>
+            <p id="ov2"></p>
+            <p id="ov3"></p>
+          </div>
+
+          <div class="sourceList" id="sourceList"></div>
+        </div>
+
+        <div class="grid" id="resultCards"></div>
+
+        <div style="padding:0 16px 16px;">
+          <div class="ctaRow">
+            <button class="btn btnYes" id="restartBtn">Run again</button>
+            <button class="btn btnNo" id="clearBtn">Clear session</button>
+          </div>
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <div class="dock" id="dock">
+    <div class="dockInner">
+      <div class="ctaRow" id="ynRow">
+        <button class="btn btnYes" id="yesBtn">YES</button>
+        <button class="btn btnNo"  id="noBtn">NO</button>
+      </div>
+
+      <div class="ctaRow" id="freqRow" style="display:none;">
+        <button class="btn btnYes" id="f0Btn">Never</button>
+        <button class="btn btnYes" id="f1Btn">Rarely</button>
+        <button class="btn btnNo"  id="f2Btn">Often</button>
+        <button class="btn btnNo"  id="f3Btn">Very often</button>
+      </div>
+
+      <div class="miniRow">
+        <button class="miniBtn" id="backBtn">Back</button>
+        <button class="miniBtn" id="reviewBtn">Review</button>
+        <button class="miniBtn" id="pauseBtn">Pause</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modalOverlay" id="startModal">
+    <div class="modal">
+      <div class="modalTop">
+        <h1>Start a gentle run</h1>
+        <p>Five stages × six items. The engine selects items adaptively (based on your answers) while keeping coverage balanced. Layer 2 appears only when it helps.</p>
+      </div>
+      <div class="rules">
+        <b>Rules</b><br/>
+        1) Answer only <b>Yes</b> or <b>No</b>.<br/>
+        2) If you hesitate, are not sure, or the answer is “sometimes”, choose <b>No</b>.<br/>
+        3) Choose <b>Yes</b> only when it happens more than peers and causes real-life problems.
+      </div>
+      <div class="modalCta">
+        <button class="secondary" id="startNoSound">Start silent</button>
+        <button class="primary" id="startWithSound">Start with sound</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="celebrate" id="celebrate">
+    <div class="celebrateCard">
+      <div style="font-size:32px; line-height:1;">✨</div>
+      <h2 id="celebrateTitle">Stage cleared!</h2>
+      <p id="celebrateSub">Soft breath… next stage.</p>
+      <div class="badge" id="celebrateBadge">+0 XP</div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Saved</div>
+
+  <script>
+    const BANK_RAW = [
+  {
+    "id": "A01",
+    "text": "Do you repeatedly get stuck starting a high-priority task for an hour or more, despite wanting to begin, and it causes real problems (missed deadlines, conflict, or major stress)?",
+    "source": "ASRS / impairment framing"
+  },
+  {
+    "id": "A02",
+    "text": "Do you mostly start work only when consequences are imminent (last-minute pressure), and this pattern has caused repeated negative outcomes?",
+    "source": "ASRS / executive function models"
+  },
+  {
+    "id": "A03",
+    "text": "In conversations, do you unintentionally miss key information because your attention drifts, even when you try hard, and it leads to misunderstandings or mistakes?",
+    "source": "ASRS"
+  },
+  {
+    "id": "A04",
+    "text": "Do you avoid tasks that require sustained mental effort (reading, forms, long emails) to the point that it repeatedly causes delays or missed obligations?",
+    "source": "ASRS"
+  },
+  {
+    "id": "A05",
+    "text": "Have you lost important items (phone, keys, wallet, documents) more than once in the past 6 months and it caused significant disruption?",
+    "source": "ASRS / clinical examples"
+  },
+  {
+    "id": "A06",
+    "text": "Is your living or work space disorganized enough that it repeatedly interferes with daily functioning (finding things, completing tasks) or creates serious stress?",
+    "source": "Clinical examples"
+  },
+  {
+    "id": "A07",
+    "text": "Do you submit work with careless mistakes even after checking, because your brain confidently “autofills” the correct version?",
+    "source": "Attention error pattern"
+  },
+  {
+    "id": "A08",
+    "text": "Do you need external reminders for most appointments and obligations because memory alone is unreliable, and failures still happen with consequences?",
+    "source": "Executive function / working memory"
+  },
+  {
+    "id": "A09",
+    "text": "Do you frequently forget what you entered a room to do multiple times a day, and it measurably disrupts you?",
+    "source": "Working memory / attention"
+  },
+  {
+    "id": "A10",
+    "text": "Does background noise or small interruptions derail your focus so strongly that it regularly prevents you from completing work others can finish in the same setting?",
+    "source": "Distractibility"
+  },
+  {
+    "id": "A11",
+    "text": "Are you chronically late because you underestimate time, even when you plan to be on time, and it has caused repeated conflicts or penalties?",
+    "source": "Time management / EF"
+  },
+  {
+    "id": "A12",
+    "text": "Do you lose track of time so severely (including hyperfocus) that you regularly miss meals, sleep, or important commitments?",
+    "source": "Time blindness / hyperfocus"
+  },
+  {
+    "id": "A13",
+    "text": "Do you struggle to switch tasks (for example, from work mode to home tasks) and experience a shutdown period that meaningfully disrupts your day?",
+    "source": "Task switching / transitions"
+  },
+  {
+    "id": "A14",
+    "text": "Do you start new projects with strong enthusiasm but abandon them within weeks, and this pattern has had real negative impact (money, commitments, relationships)?",
+    "source": "Persistence / follow-through"
+  },
+  {
+    "id": "A15",
+    "text": "If someone gives you three spoken instructions, do you usually forget one quickly, leading to repeated mistakes or conflict?",
+    "source": "Working memory"
+  },
+  {
+    "id": "A16",
+    "text": "Do you spend excessive time perfecting trivial details while urgent core work is delayed, and this has repeatedly caused problems?",
+    "source": "Prioritization / planning"
+  },
+  {
+    "id": "A17",
+    "text": "Do you blurt things out or interrupt before thinking, and it has caused repeated social or work fallout?",
+    "source": "Impulsivity / verbal"
+  },
+  {
+    "id": "S01",
+    "text": "Do you often miss indirect meanings (hints, implied requests, sarcasm) and it repeatedly causes misunderstandings in real life?",
+    "source": "AQ-10 style domain"
+  },
+  {
+    "id": "S02",
+    "text": "Do you find back-and-forth small talk unusually hard to manage, to the point that it limits relationships or work interactions?",
+    "source": "Adult autism screening domain"
+  },
+  {
+    "id": "S03",
+    "text": "Do sensory inputs (noise, lights, textures) overwhelm you enough that you must leave, shut down, or avoid common situations?",
+    "source": "Adult autism sensory domain"
+  },
+  {
+    "id": "S04",
+    "text": "Do sudden plan changes or routine disruptions cause major distress or a clear drop in functioning more than they do for most peers?",
+    "source": "Adult autism routines domain"
+  },
+  {
+    "id": "S05",
+    "text": "Do you have highly intense interests that dominate your time in a way that repeatedly crowds out responsibilities or relationships?",
+    "source": "Adult autism restricted interests domain"
+  },
+  {
+    "id": "S06",
+    "text": "Do you often struggle to read nonverbal cues (facial expression, tone, timing) and this has caused repeated social conflicts or confusion?",
+    "source": "AQ-10 style domain"
+  },
+  {
+    "id": "O01",
+    "text": "Over the past 2 weeks, have you often had very low interest or enjoyment in activities, and it clearly interfered with daily life?",
+    "source": "PHQ-2 concept"
+  },
+  {
+    "id": "O02",
+    "text": "Over the past 2 weeks, have you often felt down or hopeless, and it clearly affected functioning?",
+    "source": "PHQ-2 concept"
+  },
+  {
+    "id": "O03",
+    "text": "Over the past 2 weeks, have you often felt nervous or on edge, and it clearly impaired your ability to focus or relax?",
+    "source": "GAD-2 concept"
+  },
+  {
+    "id": "O04",
+    "text": "Over the past 2 weeks, have you often been unable to stop or control worrying, and it clearly affected sleep, work, or relationships?",
+    "source": "GAD-2 concept"
+  },
+  {
+    "id": "D01",
+    "text": "Do you repeatedly fail to stop scrolling short videos or feeds even when you decide to stop, and it causes clear harm (sleep loss, missed work, conflict)?",
+    "source": "Behavioral control / impairment framing"
+  },
+  {
+    "id": "D02",
+    "text": "Do you often prioritize apps/feeds or gaming over important responsibilities or relationships, even when you know it will cause problems?",
+    "source": "Loss of control / impairment framing"
+  },
+  {
+    "id": "D03",
+    "text": "Have you tried to cut down gaming or app use multiple times and failed, with the pattern persisting long enough to cause meaningful impairment?",
+    "source": "WHO/APA style impairment framing"
+  }
+];
+    const FREQ = [
+  {
+    "id": "F01",
+    "text": "How often do you struggle to begin a necessary task even when you intend to start?"
+  },
+  {
+    "id": "F02",
+    "text": "How often do you lose track of time and realize much more time has passed than you expected?"
+  },
+  {
+    "id": "F03",
+    "text": "How often do small distractions (notifications, noises, brief interruptions) break your focus when you need it most?"
+  },
+  {
+    "id": "F04",
+    "text": "How often do social situations feel effortful because you must consciously manage scripts, timing, or nonverbal cues?"
+  },
+  {
+    "id": "F05",
+    "text": "How often do sensory inputs become so intense that you must escape or shut down?"
+  },
+  {
+    "id": "F06",
+    "text": "How often in the past 2 weeks did worry or low mood reduce your ability to focus?"
+  },
+  {
+    "id": "F07",
+    "text": "How often do you use short videos/feeds longer than planned?"
+  },
+  {
+    "id": "F08",
+    "text": "How often does digital use push bedtime later than intended?"
+  },
+  {
+    "id": "F09",
+    "text": "How often does staying organized require unusually high daily effort (systems, reminders, over-preparing) even if outcomes look fine to others?"
+  }
+];
+    const SOURCES = [
+  {
+    "name": "ASRS v1.1 (Harvard / WHO)",
+    "url": "https://www.hcp.med.harvard.edu/ncs/asrs.php"
+  },
+  {
+    "name": "AQ-10 (NICE)",
+    "url": "https://www.nice.org.uk/guidance/cg142/resources/autism-research-centre-autism-spectrum-quotient-aq10-test-pdf-241810910917"
+  },
+  {
+    "name": "PHQ-2 overview (UW)",
+    "url": "https://www.hiv.uw.edu/page/mental-health-screening/phq-2"
+  },
+  {
+    "name": "GAD-2 overview (UW)",
+    "url": "https://www.hiv.uw.edu/page/mental-health-screening/gad-2"
+  },
+  {
+    "name": "Gaming disorder (WHO ICD-11 FAQ)",
+    "url": "https://www.who.int/standards/classifications/frequently-asked-questions/gaming-disorder"
+  },
+  {
+    "name": "Internet Gaming Disorder (APA)",
+    "url": "https://www.psychiatry.org/patients-families/internet-gaming"
+  }
+];
+
+    const STORE_KEY = "brainQuestRun_v10";
+    const STAGES = 5;
+    const PER_STAGE = 6;
+    const TOTAL_MAIN = STAGES * PER_STAGE;
+
+    let mode = "main";
+    let paused = false;
+
+    function norm(s){ return (s||"").toLowerCase(); }
+
+    function autoTag(text){
+      const t = norm(text);
+      const has = (re)=> re.test(t);
+
+      let type = "trait";
+      if (has(/past\s+2\s+weeks|over\s+the\s+past\s+2\s+weeks/)) type = "recent_2w";
+      if (has(/causes\s+real\s+problems|negative\s+outcomes|penalties|missed\s+deadlines|clearly\s+interfered|meaningful\s+impairment|clearly\s+affected\s+functioning/)) type = "impairment_strict";
+
+      let domain = "adhd";
+      let facet = "general";
+
+      if (has(/sarcasm|read\s+nonverbal|nonverbal|social\s+cues|small\s+talk|read\s+indirect|between\s+the\s+lines/)){ domain="autism"; facet="social"; }
+      if (has(/sensory|noise|lights|textures|overwhelm/)){ domain="autism"; facet="sensory"; }
+      if (has(/routine|plan\s+changes|sudden\s+plan\s+changes|disruptions/)){ domain="autism"; facet="flexibility"; }
+      if (has(/intense\s+interests|restricted\s+interests|dominates\s+your\s+time/)){ domain="autism"; facet="interests"; }
+
+      if (has(/down|hopeless|low\s+interest|low\s+enjoyment|anhedonia/)){ domain="other"; facet="low_mood"; }
+      if (has(/worry|anxious|on\s+edge|nervous|control\s+worrying/)){ domain="other"; facet="anxiety"; }
+
+      if (has(/scroll|feeds|short\s+videos|gaming|apps\/feeds|cut\s+down/)){ domain="digital"; facet="loss_of_control"; }
+      if (has(/reminders|alarms|systems|over-preparing|coping/)){ domain="cope"; facet="coping_load"; }
+
+      if (domain==="adhd") {
+        if (has(/starting|start\s+work|begin/)) facet = "initiation";
+        if (has(/time|late|underestimate|lose\s+track\s+of\s+time|hyperfocus/)) facet = "time";
+        if (has(/interrupt|blurt/)) facet = "impulsivity";
+        if (has(/lost\s+important\s+items|lost\s+items|keys|wallet/)) facet = "organization";
+        if (has(/noise|interruptions|distract/)) facet = "distractibility";
+        if (has(/switch\s+tasks|transition|shutdown/)) facet = "switching";
+        if (has(/three\s+spoken\s+instructions|forget/)) facet = "working_memory";
+        if (has(/perfecting\s+trivial|priorit/)) facet = "prioritization";
+      }
+
+      let level = 2;
+      if (has(/repeatedly|often|chronically|regularly|multiple\s+times\s+a\s+day/)) level = 3;
+      if (has(/major\s+stress|penalties|conflict|meaningfully\s+disrupts|must\s+leave|shut\s+down|clearly\s+interfered|meaningful\s+impairment/)) level = 4;
+      if (has(/fall\s+apart|serious\s+stress|significant\s+disruption/)) level = 5;
+
+      return {domain, facet, type, level};
+    }
+
+    const BANK = BANK_RAW.map(q => {
+      const tag = autoTag(q.text);
+      return {
+        ...q,
+        domain: q.domain || tag.domain,
+        facet: q.facet || tag.facet,
+        type: q.type || tag.type,
+        level: q.level || tag.level,
+      };
+    });
+
+    const el = (id)=>document.getElementById(id);
+    const stageLabel = el("stageLabel");
+    const qIndex = el("qIndex");
+    const qInStage = el("qInStage");
+    const barFill = el("barFill");
+    const themeTag = el("themeTag");
+    const tinyHint = el("tinyHint");
+    const questionText = el("questionText");
+    const helperText = el("helperText");
+
+    const ynRow = el("ynRow");
+    const freqRow = el("freqRow");
+
+    const yesBtn = el("yesBtn");
+    const noBtn  = el("noBtn");
+    const f0Btn  = el("f0Btn");
+    const f1Btn  = el("f1Btn");
+    const f2Btn  = el("f2Btn");
+    const f3Btn  = el("f3Btn");
+
+    const backBtn = el("backBtn");
+    const reviewBtn = el("reviewBtn");
+    const pauseBtn = el("pauseBtn");
+
+    const startModal = el("startModal");
+    const startNoSound = el("startNoSound");
+    const startWithSound = el("startWithSound");
+
+    const celebrate = el("celebrate");
+    const celebrateTitle = el("celebrateTitle");
+    const celebrateSub = el("celebrateSub");
+    const celebrateBadge = el("celebrateBadge");
+
+    const xpVal = el("xpVal");
+    const audioState = el("audioState");
+    const audioPill = el("audioPill");
+
+    const questionCard = el("questionCard");
+    const runUI = el("runUI");
+    const results = el("results");
+    const dock = el("dock");
+
+    const totalYesEl = el("totalYes");
+    const scoreRing = el("scoreRing");
+    const overallEval = el("overallEval");
+    const resultCards = el("resultCards");
+    const restartBtn = el("restartBtn");
+    const clearBtn = el("clearBtn");
+    const sourceList = el("sourceList");
+
+    const ov1 = el("ov1");
+    const ov2 = el("ov2");
+    const ov3 = el("ov3");
+
+    const toast = el("toast");
+
+    const THEMES = [
+      { name:"Soft Bloom", hue: 210 },
+      { name:"Calm Stream", hue: 195 },
+      { name:"Cloud Garden", hue: 225 },
+      { name:"Quiet Meadow", hue: 165 },
+      { name:"Moonlight Finish", hue: 235 },
+    ];
+    function setTheme(stageIdx){
+      const t = THEMES[Math.max(0, Math.min(THEMES.length-1, stageIdx))];
+      themeTag.textContent = t.name;
+      document.documentElement.style.setProperty("--accent", `hsl(${t.hue} 85% 74%)`);
+      document.documentElement.style.setProperty("--accent2", `hsl(${t.hue} 90% 88%)`);
+    }
+
+    function shuffle(arr){
+      const a = arr.slice();
+      for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+      return a;
+    }
+    function pulse(btn){ btn.classList.remove("pulse"); void btn.offsetWidth; btn.classList.add("pulse"); setTimeout(()=>btn.classList.remove("pulse"), 160); }
+    function showToast(msg){ toast.textContent = msg; toast.classList.add("show"); clearTimeout(showToast._t); showToast._t = setTimeout(()=>toast.classList.remove("show"), 900); }
+
+    function saveRun(){ try{ sessionStorage.setItem(STORE_KEY, JSON.stringify(run)); }catch(e){} }
+    function loadRun(){ try{ const raw = sessionStorage.getItem(STORE_KEY); if(!raw) return null; return JSON.parse(raw); }catch(e){ return null; } }
+    function clearRun(){ try{ sessionStorage.removeItem(STORE_KEY); }catch(e){} run=null; mode="main"; paused=false; }
+
+    let run = null;
+
+    const DOMAINS = ["adhd","autism","other","digital","cope"];
+    function domainCountsFromAnswers(answers){
+      const out = {};
+      for(const d of DOMAINS) out[d] = {yes:0, asked:0};
+      for(const id of Object.keys(answers)){
+        const q = BANK.find(x=>x.id===id);
+        if(!q) continue;
+        out[q.domain] = out[q.domain] || {yes:0, asked:0};
+        out[q.domain].asked += 1;
+        if(answers[id]===true) out[q.domain].yes += 1;
+      }
+      return out;
+    }
+    function rate(yes, asked){ return (yes+1)/(asked+2); }
+    function uncertainty(r){ return r*(1-r); }
+    function stageIndex(){ return Math.floor(run.mainIdx / PER_STAGE); }
+    function inStageIndex(){ return (run.mainIdx % PER_STAGE) + 1; }
+
+    function stageFacetsNeeded(){ return 3; }
+
+    function pickAnchors(poolIds){
+      const byDomain = {};
+      for(const id of poolIds){
+        const q = BANK.find(x=>x.id===id);
+        if(!q) continue;
+        (byDomain[q.domain] = byDomain[q.domain] || []).push(id);
+      }
+      const want = ["adhd","autism","other","digital","cope"];
+      const picked = [];
+      for(const d of want){
+        const arr = byDomain[d] || [];
+        if(arr.length) picked.push(arr[Math.floor(Math.random()*arr.length)]);
+      }
+      const remaining = poolIds.filter(id => !picked.includes(id));
+      remaining.sort((a,b)=> (BANK.find(x=>x.id===b).level||0) - (BANK.find(x=>x.id===a).level||0));
+      while(picked.length < Math.min(6, poolIds.length) && remaining.length) picked.push(remaining.shift());
+      return picked;
+    }
+
+    function pickNextQuestion(){
+      const unanswered = run.mainOrder.filter(id => run.answers[id] === undefined);
+      if(unanswered.length===0) return null;
+
+      if(run.mainIdx < 6) return run.mainOrder[run.mainIdx];
+
+      const counts = domainCountsFromAnswers(run.answers);
+      const rates = {};
+      const uncert = {};
+      for(const d of DOMAINS){
+        const r = rate(counts[d].yes, counts[d].asked);
+        rates[d] = r;
+        uncert[d] = uncertainty(r);
+      }
+
+      const primary = Object.entries(rates).filter(([k,_])=>k!=="cope").sort((a,b)=>b[1]-a[1])[0][0];
+
+      const neededFacetCount = stageFacetsNeeded();
+      const currentStage = stageIndex();
+      const stageStart = currentStage*PER_STAGE;
+      const stageEnd = stageStart + PER_STAGE;
+
+      const askedThisStage = run.history
+        .filter(h => h.mainIdx >= stageStart && h.mainIdx < stageEnd)
+        .map(h => h.qid)
+        .map(id => BANK.find(x=>x.id===id))
+        .filter(Boolean);
+
+      const facetSet = new Set(askedThisStage.map(q=>q.facet));
+      const missingFacetBoost = Math.max(0, neededFacetCount - facetSet.size);
+
+      const scored = unanswered.map(id=>{
+        const q = BANK.find(x=>x.id===id);
+        if(!q) return {id, score:-999};
+        const d = q.domain;
+        const u = uncert[d] ?? 0.25;
+
+        let s = 0;
+        if(d === primary) s += 0.85; else s += 0.35;
+        s += 1.35 * u;
+        s += 0.10 * (q.level || 2);
+        if(!facetSet.has(q.facet)) s += 0.30 + 0.10*missingFacetBoost;
+        if(q.type === "impairment_strict") s += 0.18;
+        if(q.type === "recent_2w") s -= 0.05;
+        if(d === "cope") s -= 0.08;
+        s += (Math.random()*0.08);
+        return {id, score:s};
+      }).sort((a,b)=>b.score-a.score);
+
+      return scored[0].id;
+    }
+
+    function buildInitialOrder(){
+      const ids = BANK.map(q=>q.id);
+      const shuffled = shuffle(ids);
+      const anchors = pickAnchors(shuffled);
+      const rest = shuffled.filter(id => !anchors.includes(id));
+      return anchors.concat(rest);
+    }
+
+    function shouldRunLayer2(){
+      const answers = run.answers;
+      const yesIds = Object.keys(answers).filter(k => answers[k]===true);
+      const totalYes = yesIds.length;
+
+      const counts = domainCountsFromAnswers(answers);
+      const rates = {
+        adhd: rate(counts.adhd.yes, counts.adhd.asked),
+        autism: rate(counts.autism.yes, counts.autism.asked),
+        other: rate(counts.other.yes, counts.other.asked),
+        digital: rate(counts.digital.yes, counts.digital.asked),
+      };
+      const sorted = Object.entries(rates).sort((a,b)=>b[1]-a[1]);
+      const gap = sorted[0][1] - sorted[1][1];
+
+      if(totalYes >= 4) return true;
+      if(gap < 0.10) return true;
+      if(counts.cope.yes >= 1 && totalYes <= 3) return true;
+      if(counts.other.yes >= 2) return true;
+      if(counts.digital.yes >= 2) return true;
+      if(counts.autism.yes >= 3) return true;
+      return false;
+    }
+
+    let audioEnabled = false;
+    let audioReady = false;
+    let ctx = null;
+    let master = null;
+    let musicBus = null;
+    let sfxBus = null;
+    let musicNodes = [];
+    let musicTimer = null;
+
+    function ensureAudio(){
+      if(audioReady) return;
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      master = ctx.createGain();
+      master.gain.value = 0.32;
+      master.connect(ctx.destination);
+      musicBus = ctx.createGain();
+      musicBus.gain.value = 0.22;
+      musicBus.connect(master);
+      sfxBus = ctx.createGain();
+      sfxBus.gain.value = 0.28;
+      sfxBus.connect(master);
+      audioReady = true;
+    }
+
+    async function unlockAudio(){
+      try{
+        ensureAudio();
+        if(ctx.state !== "running") await ctx.resume();
+        audioEnabled = true;
+        audioState.textContent = "On";
+        audioPill.style.background = "rgba(79,211,167,.16)";
+        startMusicForStage(mode==="freq" ? 4 : stageIndex());
+      }catch(e){}
+    }
+
+    function stopMusic(){
+      if(musicTimer) clearInterval(musicTimer);
+      musicTimer = null;
+      for(const n of musicNodes){ try{ n.stop && n.stop(); }catch(e){} try{ n.disconnect && n.disconnect(); }catch(e){} }
+      musicNodes = [];
+    }
+
+    function gentlePad(freq, detuneCents=0){
+      const o = ctx.createOscillator();
+      o.type = "sine";
+      o.frequency.value = freq;
+      o.detune.value = detuneCents;
+
+      const g = ctx.createGain();
+      g.gain.value = 0.0001;
+
+      const lp = ctx.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 820;
+      lp.Q.value = 0.55;
+
+      o.connect(lp);
+      lp.connect(g);
+      g.connect(musicBus);
+
+      const now = ctx.currentTime;
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(0.10, now + 1.3);
+      g.gain.linearRampToValueAtTime(0.065, now + 4.0);
+
+      o.start();
+      musicNodes.push(o,g,lp);
+    }
+
+    function startMusicForStage(stageIdx){
+      if(!audioEnabled || !audioReady) return;
+      stopMusic();
+
+      const roots = [261.63, 246.94, 293.66, 220.00, 277.18];
+      const root = roots[Math.max(0, Math.min(roots.length-1, stageIdx))];
+      const chord = [1, 5/4, 3/2];
+
+      gentlePad(root*chord[0], -6);
+      gentlePad(root*chord[1], +7);
+      gentlePad(root*chord[2], -12);
+
+      musicTimer = setInterval(()=>{
+        if(!audioEnabled || ctx.state!=="running") return;
+        const t = ctx.currentTime;
+        musicBus.gain.setTargetAtTime(0.22 + 0.03*Math.sin(t*0.65), t, 0.7);
+      }, 800);
+
+      setTimeout(()=>{
+        if(!audioEnabled) return;
+        stopMusic();
+        startMusicForStage(stageIdx);
+      }, 19000);
+    }
+
+    function sfxTap(){
+      if(!audioEnabled || !audioReady) return;
+      const now = ctx.currentTime;
+
+      const o = ctx.createOscillator();
+      o.type = "sine";
+      o.frequency.setValueAtTime(500, now);
+
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(0.085, now + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.10);
+
+      const lp = ctx.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.setValueAtTime(850, now);
+
+      o.connect(lp); lp.connect(g); g.connect(sfxBus);
+      o.start(now); o.stop(now + 0.11);
+    }
+
+    function sfxWin(){
+      if(!audioEnabled || !audioReady) return;
+      const now = ctx.currentTime;
+      const notes = [659.25, 783.99, 987.77];
+      notes.forEach((f,i)=>{
+        const t = now + i*0.085;
+        const o = ctx.createOscillator();
+        o.type = "sine";
+        o.frequency.setValueAtTime(f, t);
+
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(0.09, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+
+        const lp = ctx.createBiquadFilter();
+        lp.type = "lowpass";
+        lp.frequency.setValueAtTime(1100, t);
+
+        o.connect(lp); lp.connect(g); g.connect(sfxBus);
+        o.start(t); o.stop(t + 0.26);
+      });
+    }
+
+    audioPill.addEventListener("click", async ()=>{
+      if(!audioReady) await unlockAudio();
+      else{
+        audioEnabled = !audioEnabled;
+        audioState.textContent = audioEnabled ? "On" : "Off";
+        audioPill.style.background = audioEnabled ? "rgba(79,211,167,.16)" : "rgba(255,255,255,.72)";
+        if(audioEnabled) startMusicForStage(mode==="freq" ? 4 : stageIndex());
+        else stopMusic();
+      }
+      sfxTap();
+    });
+
+    const fx = document.getElementById("fx");
+    const fxc = fx.getContext("2d");
+    let confetti = [];
+    function resizeFx(){ fx.width = window.innerWidth * devicePixelRatio; fx.height = window.innerHeight * devicePixelRatio; fxc.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0); }
+    window.addEventListener("resize", resizeFx);
+    resizeFx();
+
+    function burstConfetti(){
+      const w = window.innerWidth, h = window.innerHeight;
+      const cx = w*0.5, cy = h*0.30;
+      const n = 36;
+      for(let i=0;i<n;i++){
+        const a = (Math.random()*Math.PI*2);
+        const sp = 2 + Math.random()*3.0;
+        confetti.push({
+          x: cx, y: cy,
+          vx: Math.cos(a)*sp,
+          vy: Math.sin(a)*sp - 2.0,
+          r: 2 + Math.random()*3,
+          t: 0,
+          life: 40 + Math.random()*40,
+          hue: 180 + Math.random()*70
+        });
+      }
+    }
+
+    function tickFx(){
+      fxc.clearRect(0,0,window.innerWidth,window.innerHeight);
+      confetti = confetti.filter(p=>p.t < p.life);
+      for(const p of confetti){
+        p.t += 1;
+        p.vy += 0.08;
+        p.x += p.vx;
+        p.y += p.vy;
+        const alpha = 1 - (p.t/p.life);
+        fxc.beginPath();
+        fxc.fillStyle = `hsla(${p.hue} 75% 70% / ${alpha*0.68})`;
+        fxc.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        fxc.fill();
+      }
+      requestAnimationFrame(tickFx);
+    }
+    tickFx();
+
+    function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+    function normalizedStrength(answers){
+      const counts = domainCountsFromAnswers(answers);
+      const n = {
+        adhd: counts.adhd.asked || 1,
+        autism: counts.autism.asked || 1,
+        other: counts.other.asked || 1,
+        digital: counts.digital.asked || 1,
+        cope: counts.cope.asked || 1,
+      };
+      return {
+        adhd: clamp01((counts.adhd.yes) / n.adhd),
+        autism: clamp01((counts.autism.yes) / n.autism),
+        other: clamp01((counts.other.yes) / n.other),
+        digital: clamp01((counts.digital.yes) / n.digital),
+        cope: clamp01((counts.cope.yes) / n.cope),
+      };
+    }
+
+    function primaryDriver(answers){
+      const str = normalizedStrength(answers);
+      const entries = Object.entries(str).filter(([k,_])=>k!=="cope").sort((a,b)=>b[1]-a[1]);
+      const [k,v] = entries[0];
+      const second = entries[1];
+      const low = v < 0.18;
+      return { key:k, value:v, second, low };
+    }
+
+    function labelForPrimary(k){
+      if(k==="adhd") return "ADHD-like executive/attention friction";
+      if(k==="autism") return "Autism/Asperger-like social-sensory pattern";
+      if(k==="other") return "Mood/anxiety drag";
+      if(k==="digital") return "Digital loss-of-control pattern";
+      return "No strong signal";
+    }
+    function actionForPrimary(k){
+      if(k==="adhd") return "Best next step: treat it as an execution system problem—externalize time, reduce task entry friction, and consider a professional ADHD review if this matches lifelong history.";
+      if(k==="autism") return "Best next step: map your highest-cost contexts (social load, sensory load, sudden change) and consider an autism-informed assessment if this has been lifelong.";
+      if(k==="other") return "Best next step: prioritize mood/anxiety and sleep stabilization first; attention often improves quickly when these drivers are treated.";
+      if(k==="digital") return "Best next step: enforce bedtime protection + notification control + time limits for short-video feeds, then re-check after 14 days.";
+      return "Best next step: keep current supports, and re-run only if real-life impairment increases.";
+    }
+
+    function freqSummary(){
+      if(!run.freq) return null;
+      const keys = Object.keys(run.freq);
+      if(keys.length===0) return null;
+
+      const map = (id)=>{
+        if(id==="F01"||id==="F02"||id==="F03") return "adhd";
+        if(id==="F04"||id==="F05") return "autism";
+        if(id==="F06") return "other";
+        if(id==="F07"||id==="F08") return "digital";
+        if(id==="F09") return "cope";
+        return "other";
+      };
+
+      const by = {};
+      for(const id of keys){
+        const d = map(id);
+        (by[d] = by[d] || []).push(run.freq[id]);
+      }
+      const avg = (arr)=> arr.reduce((a,b)=>a+b,0)/arr.length;
+      const out = {};
+      for(const d of Object.keys(by)) out[d] = avg(by[d]);
+      return out;
+    }
+
+    function avgLabel(x){ if(x < 0.75) return "low"; if(x < 1.75) return "mild"; if(x < 2.5) return "moderate"; return "high"; }
+
+    function overview3Sentences(answers){
+      const yesIds = Object.keys(answers).filter(k=>answers[k]===true);
+      const totalYes = yesIds.length;
+
+      const counts = domainCountsFromAnswers(answers);
+      const freq = freqSummary();
+      const prim = primaryDriver(answers);
+
+      const primaryLabel = labelForPrimary(prim.key);
+      const layer2Line = (!freq)
+        ? "Layer 2 was not needed for this run."
+        : (freq.cope !== undefined && freq.cope >= 2.0)
+          ? "Layer 2 shows a high coping load even when consequences are partly contained."
+          : `Layer 2 suggests ${avgLabel(freq[prim.key] ?? 0)} intensity in the same direction.`;
+
+      const s1 = `Primary finding: ${prim.low ? "low overall signal, with a slight tilt toward " + primaryLabel : primaryLabel}.`;
+      const s2 = `Evidence: ${totalYes} total Yes. ADHD ${counts.adhd.yes}/${counts.adhd.asked}, Autism ${counts.autism.yes}/${counts.autism.asked}, Mood/Anxiety ${counts.other.yes}/${counts.other.asked}, Digital ${counts.digital.yes}/${counts.digital.asked}. ${layer2Line}`;
+      const s3 = actionForPrimary(prim.key);
+      return [s1,s2,s3];
+    }
+
+    function segmentPct(yes, asked){ return clamp01(asked ? yes/asked : 0); }
+
+    function explainDomain(title, yes, asked, pct, body){
+      const div = document.createElement("div");
+      div.className = "miniCard";
+      div.innerHTML = `
+        <h4>${title}</h4>
+        <div class="sub"><b>${yes}/${asked} Yes</b><br/>${body}</div>
+        <div class="spark"><i style="width:${Math.round(pct*100)}%"></i></div>
+      `;
+      return div;
+    }
+
+    function domainNarrative(domainKey, yes, asked, freq){
+      const p = segmentPct(yes, asked);
+      if(domainKey==="adhd"){
+        if(p < 0.18) return (freq && freq.cope!==undefined && freq.cope>=2.0) ?
+          "Low strict impairment signal, but high coping load suggests you may be working hard to prevent consequences." :
+          "Low strict impairment signal on this run.";
+        if(p < 0.40) return "Moderate signal; daily friction is typically noticeable.";
+        return "High signal; impairment-level executive/attention friction is strongly represented.";
+      }
+      if(domainKey==="autism"){
+        if(p < 0.18) return "Low signal on social-cue + sensory/routine items.";
+        if(p < 0.40) return "Moderate signal; consistent social-sensory patterns stand out.";
+        return "High signal; many items point to consistent social-sensory differences.";
+      }
+      if(domainKey==="other"){
+        if(p < 0.18) return "Low recent mood/anxiety signal on these items.";
+        if(p < 0.40) return "Moderate recent mood/anxiety signal; this can strongly affect attention and energy.";
+        return "High recent mood/anxiety signal; addressing this often changes attention quickly.";
+      }
+      if(domainKey==="digital"){
+        if(p < 0.18) return "Low digital loss-of-control signal.";
+        if(p < 0.40) return "Mild signal; digital habits may still affect sleep and focus.";
+        return "Elevated signal; loss-of-control is likely contributing to attention and recovery time.";
+      }
+      if(domainKey==="cope"){
+        if(p < 0.18) return "Low coping-load signal on the strict items included here.";
+        if(p < 0.40) return "Moderate coping-load signal; structure may be doing important work for you.";
+        return "High coping-load signal; the system you use may be preventing visible fallout.";
+      }
+      return "";
+    }
+
+    function nextChecks(counts, freq){
+      const items = [];
+      if(counts.other.yes >= 2){
+        items.push("Sleep quality and schedule (consistent wake time; unrefreshing sleep; snoring/gasping).");
+        items.push("Stress load (rumination, tension, burnout).");
+      }
+      if(counts.digital.yes >= 2){
+        items.push("Digital boundaries (bedtime protection, notifications, short-video exposure).");
+      }
+      if(counts.autism.yes >= 3){
+        items.push("Sensory overload and recovery after social time.");
+      }
+      if(freq && freq.cope !== undefined && freq.cope >= 2.0){
+        items.push("Coping load: how much structure is required to keep things from slipping.");
+      }
+      if(counts.adhd.yes <= 2) items.push("Context dependence: does performance drop sharply without structure?");
+      else items.push("Execution supports: visible next step, timers, and fewer parallel tasks.");
+      return items.slice(0,5);
+    }
+
+    function makeNewRun(){
+      const mainOrder = buildInitialOrder();
+      return {
+        v: 10,
+        createdAt: Date.now(),
+        mainOrder,
+        mainIdx: 0,
+        answers: {},
+        xp: 0,
+        history: [],
+        freqIdx: 0,
+        freq: {},
+        finishedAt: null
+      };
+    }
+
+    function mountStartModal(){
+      startModal.classList.add("show");
+      results.classList.remove("show");
+      questionCard.style.display = "";
+      runUI.style.display = "";
+      dock.style.display = "";
+      ynRow.style.display = "";
+      freqRow.style.display = "none";
+    }
+
+    function startRun(withSound){
+      const saved = loadRun();
+      if(saved && saved.v === 10 && saved.mainOrder && saved.mainOrder.length === BANK.length) run = saved;
+      else run = makeNewRun();
+
+      paused = false;
+      mode = "main";
+
+      startModal.classList.remove("show");
+      results.classList.remove("show");
+
+      questionCard.style.display = "";
+      runUI.style.display = "";
+      dock.style.display = "";
+
+      if(withSound) unlockAudio();
+      else{
+        audioEnabled = false;
+        audioState.textContent = "Off";
+        audioPill.style.background = "rgba(255,255,255,.72)";
+        stopMusic();
+      }
+
+      setTheme(stageIndex());
+      updateUI();
+      saveRun();
+    }
+
+    function restart(){
+      clearRun();
+      run = makeNewRun();
+      paused = false;
+      mode = "main";
+
+      results.classList.remove("show");
+      questionCard.style.display = "";
+      runUI.style.display = "";
+      dock.style.display = "";
+
+      setTheme(0);
+      updateUI();
+      saveRun();
+      showToast("New run");
+      if(audioEnabled) startMusicForStage(0);
+    }
+
+    function togglePause(){
+      paused = !paused;
+      if(paused){ stopMusic(); showToast("Paused"); }
+      else{ showToast("Resumed"); if(audioEnabled) startMusicForStage(mode==="freq" ? 4 : stageIndex()); }
+      updateUI();
+    }
+
+    function addXP(n){ run.xp = (run.xp||0) + n; xpVal.textContent = String(run.xp); saveRun(); return n; }
+
+    function stageCelebration(){
+      const cleared = stageIndex();
+      celebrateTitle.textContent = `Stage ${cleared} cleared!`;
+      celebrateSub.textContent = "Soft breath… next stage.";
+      celebrateBadge.textContent = `+${addXP(90)} XP`;
+
+      burstConfetti();
+      if(audioEnabled) sfxWin();
+
+      celebrate.classList.add("show");
+      [yesBtn,noBtn,f0Btn,f1Btn,f2Btn,f3Btn,backBtn,reviewBtn,pauseBtn].forEach(b=>b && (b.disabled=true));
+      setTimeout(()=>{
+        celebrate.classList.remove("show");
+        [yesBtn,noBtn,f0Btn,f1Btn,f2Btn,f3Btn,backBtn,reviewBtn,pauseBtn].forEach(b=>b && (b.disabled=false));
+        setTheme(stageIndex());
+        if(audioEnabled) startMusicForStage(stageIndex());
+        updateUI();
+      }, 2200);
+    }
+
+    function answerMain(val, btn){
+      if(paused) return;
+      if(btn) pulse(btn);
+
+      let qid = run.mainOrder[run.mainIdx];
+      while(qid && run.answers[qid] !== undefined && run.mainIdx < run.mainOrder.length){ run.mainIdx += 1; qid = run.mainOrder[run.mainIdx]; }
+      if(!qid) return;
+
+      run.answers[qid] = !!val;
+      run.history.push({ qid, mainIdx: run.mainIdx, at: Date.now() });
+
+      if(audioEnabled) sfxTap();
+      addXP(val ? 26 : 18);
+
+      const endOfStage = ((run.mainIdx % PER_STAGE) === (PER_STAGE - 1));
+      run.mainIdx = Math.min(run.mainIdx + 1, TOTAL_MAIN);
+
+      if(run.mainIdx < TOTAL_MAIN){
+        const nextId = pickNextQuestion();
+        if(nextId && run.mainOrder[run.mainIdx] !== nextId){
+          const j = run.mainOrder.indexOf(nextId);
+          if(j >= 0){ const tmp = run.mainOrder[run.mainIdx]; run.mainOrder[run.mainIdx] = nextId; run.mainOrder[j] = tmp; }
+        }
+      }
+
+      saveRun();
+
+      if(run.mainIdx >= TOTAL_MAIN){
+        if(shouldRunLayer2()){ mode="freq"; run.freqIdx=0; run.freq={}; saveRun(); burstConfetti(); if(audioEnabled) sfxWin(); showToast("Layer 2 unlocked"); if(audioEnabled) startMusicForStage(4); updateUI(); }
+        else finishRun();
+        return;
+      }
+
+      if(endOfStage) stageCelebration();
+      else updateUI();
+    }
+
+    function answerFreq(val, btn){
+      if(paused) return;
+      if(btn) pulse(btn);
+      const q = FREQ[run.freqIdx];
+      if(!q) return;
+      run.freq[q.id] = Number(val);
+      if(audioEnabled) sfxTap();
+      addXP(12);
+
+      run.freqIdx = Math.min(run.freqIdx + 1, FREQ.length);
+      saveRun();
+
+      if(run.freqIdx >= FREQ.length) finishRun();
+      else updateUI();
+    }
+
+    function finishRun(){
+      stopMusic();
+      mode = "results";
+      saveRun();
+
+      runUI.style.display = "none";
+      questionCard.style.display = "none";
+      dock.style.display = "none";
+
+      results.classList.add("show");
+
+      const yesIds = Object.keys(run.answers).filter(k=>run.answers[k]===true);
+      const totalYes = yesIds.length;
+
+      totalYesEl.textContent = String(totalYes);
+      scoreRing.style.setProperty("--p", `${Math.round((totalYes/TOTAL_MAIN)*360)}deg`);
+
+      const counts = domainCountsFromAnswers(run.answers);
+      const freq = freqSummary();
+
+      const [s1,s2,s3] = overview3Sentences(run.answers);
+      ov1.textContent = s1;
+      ov2.textContent = s2;
+      ov3.textContent = s3;
+
+      overallEval.textContent =
+        `ADHD ${counts.adhd.yes}/${counts.adhd.asked} • Autism ${counts.autism.yes}/${counts.autism.asked} • Mood/Anxiety ${counts.other.yes}/${counts.other.asked} • Digital ${counts.digital.yes}/${counts.digital.asked} • Layer 2 ${freq ? "on" : "off"}`;
+
+      sourceList.innerHTML = "Sources: " + SOURCES.map(s=>`<a href="${s.url}" target="_blank" rel="noreferrer">${s.name}</a>`).join(" • ");
+
+      resultCards.innerHTML = "";
+      resultCards.appendChild(explainDomain("ADHD-like signal (strict)", counts.adhd.yes, counts.adhd.asked, segmentPct(counts.adhd.yes, counts.adhd.asked), domainNarrative("adhd", counts.adhd.yes, counts.adhd.asked, freq)));
+      resultCards.appendChild(explainDomain("Autism/Asperger-like signal (strict)", counts.autism.yes, counts.autism.asked, segmentPct(counts.autism.yes, counts.autism.asked), domainNarrative("autism", counts.autism.yes, counts.autism.asked, freq)));
+      resultCards.appendChild(explainDomain("Mood/anxiety signal (strict)", counts.other.yes, counts.other.asked, segmentPct(counts.other.yes, counts.other.asked), domainNarrative("other", counts.other.yes, counts.other.asked, freq)));
+      resultCards.appendChild(explainDomain("Digital loss-of-control (strict)", counts.digital.yes, counts.digital.asked, segmentPct(counts.digital.yes, counts.digital.asked), domainNarrative("digital", counts.digital.yes, counts.digital.asked, freq)));
+
+      if(freq){
+        const c = document.createElement("div");
+        c.className = "miniCard";
+        const copeLine = (freq.cope !== undefined) ? `Layer 2 coping-load average: <b>${avgLabel(freq.cope)}</b>.` : "";
+        c.innerHTML = `
+          <h4>Coping load</h4>
+          <div class="sub">${copeLine}<br/>${domainNarrative("adhd", counts.adhd.yes, counts.adhd.asked, freq)}</div>
+        `;
+        resultCards.appendChild(c);
+      }
+
+      const items = nextChecks(counts, freq);
+      const n = document.createElement("div");
+      n.className = "miniCard";
+      n.innerHTML = `
+        <h4>What to check next</h4>
+        <div class="sub">If the result surprised you, check these high-impact drivers:</div>
+        <div class="inlineNotice">${items.map(t=>"• "+t).join("<br/>")}</div>
+      `;
+      resultCards.appendChild(n);
+
+      run.finishedAt = Date.now();
+      saveRun();
+    }
+
+    function updateUI(){
+      if(!run) return;
+
+      if(mode !== "results"){
+        results.classList.remove("show");
+        questionCard.style.display = "";
+        runUI.style.display = "";
+        dock.style.display = "";
+      }
+
+      if(paused){
+        questionText.textContent = "Paused.";
+        helperText.textContent = "Progress is saved in this tab session only. Tap Pause again to resume.";
+        ynRow.style.display = "none";
+        freqRow.style.display = "none";
+        tinyHint.textContent = "Paused";
+        backBtn.disabled = true;
+        reviewBtn.disabled = true;
+        pauseBtn.textContent = "Resume";
+        stageLabel.textContent = (mode==="freq") ? "Layer 2" : `Stage ${stageIndex()+1}/${STAGES}`;
+        qIndex.textContent = "—";
+        qInStage.textContent = "—";
+        barFill.style.width = `${Math.round((mode==="main" ? (run.mainIdx/TOTAL_MAIN) : (run.freqIdx/FREQ.length))*100)}%`;
+        return;
+      } else {
+        pauseBtn.textContent = (mode==="freq") ? "Skip" : "Pause";
+        backBtn.disabled = false;
+        reviewBtn.disabled = false;
+      }
+
+      xpVal.textContent = String(run.xp || 0);
+
+      if(mode === "main"){
+        const s = stageIndex();
+        setTheme(s);
+        stageLabel.textContent = `Stage ${s+1}/${STAGES}`;
+        qIndex.textContent = String(inStageIndex());
+        qInStage.textContent = String(PER_STAGE);
+        barFill.style.width = `${Math.round((run.mainIdx/TOTAL_MAIN)*100)}%`;
+
+        const qid = run.mainOrder[run.mainIdx];
+        const q = BANK.find(x=>x.id===qid);
+        questionText.textContent = q ? q.text : "—";
+        helperText.textContent = "Strict rule: If you are not 100% sure, answer No.";
+        tinyHint.textContent = "Yes/No only";
+
+        ynRow.style.display = "";
+        freqRow.style.display = "none";
+        reviewBtn.textContent = "Review";
+
+        backBtn.disabled = run.mainIdx === 0;
+        if(audioEnabled) startMusicForStage(s);
+        return;
+      }
+
+      if(mode === "freq"){
+        setTheme(4);
+        stageLabel.textContent = "Layer 2";
+        qIndex.textContent = String(run.freqIdx + 1);
+        qInStage.textContent = String(FREQ.length);
+        barFill.style.width = `${Math.round((run.freqIdx/FREQ.length)*100)}%`;
+
+        const q = FREQ[run.freqIdx];
+        questionText.textContent = q ? q.text : "—";
+        helperText.textContent = "Frequency check: choose what fits best overall.";
+        tinyHint.textContent = "Never • Rarely • Often • Very often";
+
+        ynRow.style.display = "none";
+        freqRow.style.display = "";
+        reviewBtn.textContent = "Layer 2";
+        backBtn.disabled = run.freqIdx === 0;
+
+        if(audioEnabled) startMusicForStage(4);
+        return;
+      }
+    }
+
+    function goBack(){
+      if(paused) return;
+      if(mode === "main"){
+        if(run.mainIdx <= 0) return;
+        const prevIdx = run.mainIdx - 1;
+        const prevId = run.mainOrder[prevIdx];
+        if(prevId) delete run.answers[prevId];
+        for(let i=run.history.length-1;i>=0;i--){ if(run.history[i].mainIdx===prevIdx){ run.history.splice(i,1); break; } }
+        run.mainIdx = prevIdx;
+        saveRun();
+        if(audioEnabled) sfxTap();
+        showToast("Back");
+        updateUI();
+      } else if(mode === "freq"){
+        if(run.freqIdx <= 0) return;
+        const prevIdx = run.freqIdx - 1;
+        const id = FREQ[prevIdx].id;
+        delete run.freq[id];
+        run.freqIdx = prevIdx;
+        saveRun();
+        if(audioEnabled) sfxTap();
+        showToast("Back");
+        updateUI();
+      }
+    }
+
+    function review(){
+      if(paused) return;
+      if(mode === "main"){
+        const s = stageIndex();
+        const start = s*PER_STAGE;
+        const end = start + PER_STAGE;
+        const slice = run.mainOrder.slice(start, end);
+        const answered = slice.filter(id => typeof run.answers[id] === "boolean").length;
+        showToast(`${answered}/${PER_STAGE} answered in this stage`);
+      } else {
+        showToast(`Layer 2: ${run.freqIdx}/${FREQ.length}`);
+      }
+      if(audioEnabled) sfxTap();
+    }
+
+    function pauseOrSkip(){
+      if(!run) return;
+      if(mode === "main") togglePause();
+      else if(mode === "freq") finishRun();
+      if(audioEnabled) sfxTap();
+    }
+
+    startNoSound.addEventListener("click", ()=>startRun(false));
+    startWithSound.addEventListener("click", ()=>startRun(true));
+
+    yesBtn.addEventListener("click", ()=>{ answerMain(true, yesBtn); });
+    noBtn.addEventListener("click",  ()=>{ answerMain(false, noBtn); });
+
+    f0Btn.addEventListener("click", ()=>{ answerFreq(0, f0Btn); });
+    f1Btn.addEventListener("click", ()=>{ answerFreq(1, f1Btn); });
+    f2Btn.addEventListener("click", ()=>{ answerFreq(2, f2Btn); });
+    f3Btn.addEventListener("click", ()=>{ answerFreq(3, f3Btn); });
+
+    backBtn.addEventListener("click", goBack);
+    reviewBtn.addEventListener("click", review);
+    pauseBtn.addEventListener("click", pauseOrSkip);
+
+    restartBtn.addEventListener("click", restart);
+    clearBtn.addEventListener("click", ()=>{ clearRun(); mountStartModal(); showToast("Cleared"); });
+
+    (function boot(){
+      const saved = loadRun();
+      if(saved && saved.v === 10 && saved.mainOrder && saved.mainOrder.length === BANK.length){
+        run = saved;
+      } else {
+        run = makeNewRun();
+        saveRun();
+      }
+      setTheme(0);
+      updateUI();
+      mountStartModal();
+    })();
+  </script>
+</body>
+</html>
