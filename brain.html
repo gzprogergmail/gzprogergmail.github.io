@@ -135,10 +135,15 @@
     .qText{ font-size:14px; line-height:1.35; color: rgba(11,16,32,.90); }
     .qMeta{ font-size:11px; color: rgba(11,16,32,.52); margin-top:6px; }
 
-    .toggle{ display:flex; gap:10px; justify-content:flex-end; }
+    .toggle{
+      display:flex; gap:10px; justify-content:flex-end;
+      pointer-events:none; /* prevents blank-area toggles */
+    }
+    .toggle .tbtn{ pointer-events:auto; }
     @media (max-width: 980px){
       .toggle{ justify-content:flex-start; }
     }
+
     .tbtn{
       min-width: 86px;
       border:1px solid rgba(11,16,32,.10);
@@ -148,11 +153,13 @@
       font-size: 13px;
       letter-spacing:.2px;
       background: rgba(255,255,255,.92);
-      box-shadow: 0 10px 22px rgba(11,16,32,.08);
+      box-shadow: 0 12px 28px rgba(11,16,32,.10);
       cursor:pointer;
       transition: transform .10s ease, box-shadow .20s ease, filter .20s ease;
       position:relative;
       overflow:hidden;
+      touch-action: manipulation;
+      user-select:none;
     }
     .tbtn::after{
       content:"";
@@ -160,15 +167,48 @@
       background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.85), transparent 42%);
       opacity:0; transform: scale(.9);
       transition: opacity .18s ease, transform .18s ease;
+      pointer-events:none;
     }
-    .tbtn.pulse{ transform: translateY(1px) scale(.995); filter: brightness(1.02); box-shadow: 0 8px 16px rgba(11,16,32,.10); }
-    .tbtn.pulse::after{ opacity:.85; transform: scale(1.05); }
+    .tbtn.pressed{
+      transform: translateY(5px) scale(.972);
+      filter: brightness(1.03);
+      box-shadow: 0 6px 14px rgba(11,16,32,.14);
+    }
+    .tbtn.pressed::after{ opacity:.90; transform: scale(1.10); }
+    .tbtn:active{
+      transform: translateY(6px) scale(.968);
+      box-shadow: 0 5px 12px rgba(11,16,32,.16);
+    }
 
     .tbtnYes{ background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(79,211,167,.22)); }
     .tbtnNo{  background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,179,90,.22)); }
 
-    .tbtn.activeYes{ border-color: rgba(79,211,167,.55); box-shadow: 0 12px 26px rgba(79,211,167,.18); }
-    .tbtn.activeNo{  border-color: rgba(255,179,90,.55); box-shadow: 0 12px 26px rgba(255,179,90,.18); }
+    .tbtn:not(.activeYes):not(.activeNo){
+      opacity:.78;
+      filter:saturate(.86) brightness(.99);
+    }
+    .tbtn.activeYes{
+      border-color: rgba(79,211,167,.98);
+      background: linear-gradient(180deg, rgba(79,211,167,.62), rgba(255,255,255,.96));
+      box-shadow: 0 0 0 4px rgba(79,211,167,.22), 0 20px 55px rgba(79,211,167,.24);
+      color: rgba(11,16,32,.96);
+    }
+    .tbtn.activeNo{
+      border-color: rgba(255,179,90,.98);
+      background: linear-gradient(180deg, rgba(255,179,90,.62), rgba(255,255,255,.96));
+      box-shadow: 0 0 0 4px rgba(255,179,90,.22), 0 20px 55px rgba(255,179,90,.24);
+      color: rgba(11,16,32,.96);
+    }
+    .tbtn.activeYes::before,
+    .tbtn.activeNo::before{
+      content:"✓";
+      position:absolute;
+      right:10px;
+      top:8px;
+      font-size:14px;
+      opacity:.92;
+      transform: translateY(0);
+    }
 
     .dock{
       position: fixed;
@@ -202,6 +242,8 @@
       cursor:pointer;
       transition: transform .10s ease, box-shadow .20s ease, filter .20s ease;
       position:relative; overflow:hidden;
+      touch-action: manipulation;
+      user-select:none;
     }
     .btn.primary{
       border:none;
@@ -211,6 +253,7 @@
       min-width: 150px;
     }
     .btn:disabled{ cursor:not-allowed; opacity:.55; filter:saturate(.7); }
+    .btn:active{ transform: translateY(3px) scale(.985); }
 
     .toast{
       position: fixed; left:50%; transform: translateX(-50%);
@@ -375,13 +418,13 @@
 
         <div class="rules">
           <b>How to answer</b><br/>
-          Choose <b>Yes</b> only if the pattern is stronger than peers <b>and</b> causes real-life problems (school, home, friendships).<br/>
+          Choose <b>Yes</b> only if the pattern is stronger than peers <b>and</b> causes real-life impairment (school, home, friendships).<br/>
           If you are unsure, it is “sometimes”, or you hesitate, choose <b>No</b>.
         </div>
 
         <div class="rules" style="margin-top:10px;">
           <b>What you will do</b><br/>
-          Five chapters × six items. You can answer a whole chapter on one page. The engine selects items adaptively to reduce fatigue while keeping coverage balanced.
+          Five chapters × six items. You can answer a whole chapter on one page. Items are selected adaptively from a larger bank (teen-tailored parent report).
         </div>
 
         <div class="rules" style="margin-top:10px;">
@@ -395,7 +438,7 @@
       <div class="stageBanner">
         <div>
           <div class="stageName" id="chapterName">Chapter 1 • Soft Start</div>
-          <div class="stageHint" id="chapterHint">Answer all six. Buttons stay in the same place.</div>
+          <div class="stageHint" id="chapterHint">Answer all six. Only the buttons are clickable.</div>
         </div>
         <div class="pill" id="themePill">Quiet Bloom</div>
       </div>
@@ -453,11 +496,11 @@
     <div class="modal">
       <div class="modalTop">
         <h1>Start a calm parent run</h1>
-        <p>This is a structured check-in for parents of kids ages 10–15. It is strict on purpose: only answer <b>Yes</b> when the behavior is clearly stronger than peers and causes real-world impairment.</p>
+        <p>This is a structured check-in for parents of kids ages 10–15. It is strict on purpose: only answer <b>Yes</b> when the behavior is clearly stronger than peers and causes real-world impairment. Most questions refer to the past 6 months; a few explicitly refer to the past 2 weeks.</p>
       </div>
       <div class="rules" style="margin: 12px 18px 0;">
         <b>Tip</b><br/>
-        If a coping system is preventing consequences (checklists, constant supervision), answer based on what happens <b>without</b> that support.
+        If a support system is preventing consequences (checklists, constant supervision), answer based on what happens <b>without</b> that support.
       </div>
       <div class="modalCta">
         <button class="btn" id="startSilent">Start silent</button>
@@ -478,526 +521,47 @@
   <div class="toast" id="toast">Saved</div>
 
   <script>
-    const BANK = [
+    const BANK = [{"id":"T001","domain":"adhd","facet":"details","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child makes careless mistakes on homework/tests even when they know the material, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T002","domain":"adhd","facet":"details","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child skips steps or misreads directions, leading to avoidable errors, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T003","domain":"adhd","facet":"sustained_focus","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child cannot stay with reading or independent work long enough to finish without repeated prompting, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T004","domain":"adhd","facet":"sustained_focus","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child loses the thread during explanations (class, coaching, conversations) and misses key points, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T005","domain":"adhd","facet":"listening","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child seems not to take in what is said the first time, even in a calm setting, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T006","domain":"adhd","facet":"follow_through","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child starts homework or chores but leaves them unfinished unless you check repeatedly, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T007","domain":"adhd","facet":"follow_through","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child abandons multi-step tasks (packing, cleaning, project work) halfway through, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T008","domain":"adhd","facet":"organization_school","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child regularly has missing assignments because materials or uploads are not tracked, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T009","domain":"adhd","facet":"organization_school","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child has backpack/locker/device files so disorganized that work is repeatedly lost or late, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T010","domain":"adhd","facet":"planning_projects","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child struggles with long-term assignments (projects over days) and ends up in repeated last-minute crises, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T011","domain":"adhd","facet":"time_management","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child underestimates time so often that they are chronically late to school, activities, or deadlines, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T012","domain":"adhd","facet":"time_management","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child needs multiple time checks for simple routines (get ready, leave, transitions) and still runs behind, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T013","domain":"adhd","facet":"initiation","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child gets stuck starting necessary work for an hour or more, even when consequences are known, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T014","domain":"adhd","facet":"effort_avoidance","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child avoids sustained-effort tasks (essays, studying, long reading) enough to cause grades to drop or deadlines to be missed, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T015","domain":"adhd","facet":"working_memory","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child forgets one step when given 2-3 instructions, causing repeated mistakes, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T016","domain":"adhd","facet":"working_memory","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child loses track mid-task (what they were doing or looking for) often enough to disrupt productivity, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T017","domain":"adhd","facet":"distractibility","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child is derailed by small distractions (notifications, noises, movement) far more than peers in the same setting, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T018","domain":"adhd","facet":"distractibility","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child switches attention to side tasks (tabs, messages, objects) and cannot return without prompting, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T019","domain":"adhd","facet":"materials","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child misplaces important items (homework, charger, sports gear, keys/phone) often enough to disrupt plans, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T020","domain":"adhd","facet":"forgetful","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child forgets daily responsibilities (turning in completed work, chores, forms) with repeated consequences, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T021","domain":"adhd","facet":"forgetful","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child forgets agreed plans (rides, meet-ups, appointments) often enough to create conflict, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T022","domain":"adhd","facet":"prioritization","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child spends a long time on small details while urgent core work is neglected, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T023","domain":"adhd","facet":"task_switching","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child has a hard time switching from a preferred activity to a required one, causing a long stall or conflict, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T024","domain":"adhd","facet":"hyperfocus","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child gets locked into one activity so long that sleep, meals, or responsibilities are repeatedly missed, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T025","domain":"adhd","facet":"fidget","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child fidgets or taps so much that it disrupts homework, meals, or school expectations, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T026","domain":"adhd","facet":"leave_seat","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child gets up or wanders when expected to stay seated, creating repeated issues, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T027","domain":"adhd","facet":"restless","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child seems constantly on the go in a way that causes real problems with rules or routines, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T028","domain":"adhd","facet":"talking","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child talks at inappropriate times and repeatedly gets negative feedback at school, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T029","domain":"adhd","facet":"interrupt","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child interrupts or talks over others and it has harmed peer relationships, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T030","domain":"adhd","facet":"wait_turn","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child cannot wait their turn in lines/games and it causes repeated conflict, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T031","domain":"adhd","facet":"intrude","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child butts into others' activities or conversations and it causes repeated social fallout, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T032","domain":"adhd","facet":"impulsive_words","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child says things quickly and regrets them immediately, with repeated consequences, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T033","domain":"adhd","facet":"risk_rules","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child acts without thinking in ways that repeatedly create safety issues or serious rule problems, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T034","domain":"adhd","facet":"emotion_fast","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child has frustration escalate very quickly compared with peers, leading to blowups or shutdowns, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T035","domain":"adhd","facet":"emotion_recover","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child takes much longer than peers to calm down and return to tasks, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T036","domain":"adhd","facet":"homework_submit","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child does not submit completed work (forgotten upload/turn-in) often enough to affect grades, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T037","domain":"adhd","facet":"homework_start","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child delays starting homework until late evening often enough to harm sleep and create conflict, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T038","domain":"adhd","facet":"study_independence","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child cannot study or plan work without constant supervision, and performance suffers, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T039","domain":"adhd","facet":"groupwork","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child misses their role in group work because they drift or forget steps, causing peer conflict, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T040","domain":"adhd","facet":"extracurricular_instructions","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child misses instructions in sports/activities often enough to create repeated problems, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T041","domain":"adhd","facet":"teacher_prompting","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child needs far more prompting than peers to start/stay on task (per teacher feedback), and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T042","domain":"adhd","facet":"morning_launch","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child makes mornings regularly chaotic because they cannot sequence steps without heavy supervision, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T043","domain":"adhd","facet":"bedtime_transition","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child makes bedtime regularly derail because switching off activities triggers a long stall or conflict, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T044","domain":"adhd","facet":"chores_steps","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child forgets steps during chores or routines and it causes repeated redo, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T045","domain":"adhd","facet":"self_monitor","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child does not notice being too loud/too close/too disruptive until corrected, and it causes trouble, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T046","domain":"adhd","facet":"digital_schoolwork","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child while doing homework on a device, drifts into unrelated tabs/apps and cannot self-correct, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T047","domain":"adhd","facet":"note_tracking","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child even with a planner or app set up, still loses track of what is due and when, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T048","domain":"adhd","facet":"deadline_pressure","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child works mainly under immediate pressure, leading to repeated crises, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T049","domain":"adhd","facet":"procrastination_cycle","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child has repeating cycles of avoidance -> panic -> late-night catch-up that harm functioning, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T050","domain":"adhd","facet":"instruction_repeat","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child needs instructions repeated multiple times in a normal setting more than peers do, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T051","domain":"adhd","facet":"auto_fill_errors","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child has their brain 'auto-fill' and they skip steps, causing careless errors despite trying to be accurate, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T052","domain":"adhd","facet":"friend_followup","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child has friendships suffer because they forget to reply or follow plans for weeks at a time, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T053","domain":"adhd","facet":"school_consequences","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child has repeated school consequences linked to impulsive comments or rule breaking, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T054","domain":"adhd","facet":"sleep_schedule","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child cannot wind down on time and it repeatedly harms school mornings, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T055","domain":"adhd","facet":"hygiene_routine","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child stalls on basic self-care (shower, teeth, laundry) and it creates real conflict or consequences, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T056","domain":"autism","facet":"social_hints","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child often misses indirect hints, sarcasm, or 'read between the lines' meaning in real conversations, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T057","domain":"autism","facet":"social_reciprocity","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child finds back-and-forth conversation hard (timing, turn-taking, staying on topic) and it limits friendships, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T058","domain":"autism","facet":"nonverbal_reading","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child misreads facial expression, tone, or body language, causing repeated misunderstandings, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T059","domain":"autism","facet":"joining_groups","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child struggles to join groups smoothly (knowing when to speak/what to do) and it affects belonging, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T060","domain":"autism","facet":"friendships","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child has ongoing difficulty making or keeping same-age friends beyond normal ups and downs, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T061","domain":"autism","facet":"social_fatigue","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child needs long recovery after social time (withdrawn, irritable, exhausted) that disrupts routines, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T062","domain":"autism","facet":"literal_language","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child takes language very literally and often misses implied meaning, causing repeated confusion, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T063","domain":"autism","facet":"teasing_jokes","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child struggles with teasing/jokes/figurative language and it causes social friction, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T064","domain":"autism","facet":"eye_contact","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child uses eye contact in a noticeably unusual way that affects social interactions, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T065","domain":"autism","facet":"topic_fixation","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child gets stuck on a topic when others have moved on, leading to repeated negative feedback, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T066","domain":"autism","facet":"rule_bound","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child insists on strict rules in games/discussions, repeatedly causing peer conflict, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T067","domain":"autism","facet":"special_interests","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child has an intense interest that dominates time or conversation and crowds out responsibilities or relationships, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T068","domain":"autism","facet":"change_distress","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child has strong distress with unexpected changes (schedule, substitute teacher, plan changes) that derails the day, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T069","domain":"autism","facet":"rigid_routines","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child relies on rigid routines/rituals that repeatedly limit flexibility in daily life, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T070","domain":"autism","facet":"sensory_noise","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child is overwhelmed by everyday sounds (cafeteria, classroom, chewing) enough to trigger escape or shutdown, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T071","domain":"autism","facet":"sensory_clothes","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child has strong distress from clothing textures/tags or body sensations beyond what peers show, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T072","domain":"autism","facet":"sensory_light","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child is bothered by bright lights/visual clutter enough to avoid places or activities, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T073","domain":"autism","facet":"food_texture","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child has strong food texture/taste restrictions that repeatedly disrupt meals and routines, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T074","domain":"autism","facet":"shutdown","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child when overwhelmed, 'shuts down' (goes quiet, stops responding) in ways that interfere with school/home, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T075","domain":"autism","facet":"meltdown_reset","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child after a social misunderstanding, becomes intensely upset and cannot reset quickly, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T076","domain":"autism","facet":"perspective","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child has trouble taking others' perspective in real time, causing repeated conflict, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T077","domain":"autism","facet":"social_rules","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child seems unsure of unspoken social rules (personal space, small talk, group norms) and it causes repeated issues, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T078","domain":"autism","facet":"speech_style","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child has noticeably unusual speech style (formal, monotone, or overly detailed) that affects peer interactions, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T079","domain":"autism","facet":"peer_age_pref","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child consistently prefers much younger/older peers because same-age interaction feels confusing or exhausting, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T080","domain":"autism","facet":"bullying_target","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child is frequently bullied or excluded because they seem 'different', and it has caused clear impairment, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T081","domain":"other","facet":"phq_interest","level":4,"text":"In the last 2 weeks, has your child had noticeably less interest or pleasure in most activities than usual?"},{"id":"T082","domain":"other","facet":"phq_mood","level":4,"text":"In the last 2 weeks, has your child seemed down, very irritable, or hopeless on most days?"},{"id":"T083","domain":"other","facet":"phq_sleep","level":3,"text":"In the last 2 weeks, have sleep problems (too little, too much, or frequent waking) clearly disrupted daytime functioning?"},{"id":"T084","domain":"other","facet":"phq_energy","level":3,"text":"In the last 2 weeks, has low energy or fatigue been strong enough to impair schoolwork or routines?"},{"id":"T085","domain":"other","facet":"phq_appetite","level":2,"text":"In the last 2 weeks, have appetite changes (much less or much more) been noticeable and disruptive?"},{"id":"T086","domain":"other","facet":"phq_concentration","level":3,"text":"In the last 2 weeks, has anxiety or low mood clearly reduced concentration and school performance?"},{"id":"T087","domain":"other","facet":"scared_worry","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child worries so much they cannot stop, and it clearly interferes with sleep, focus, or daily routines, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T088","domain":"other","facet":"scared_body","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child has strong physical anxiety symptoms (stomachaches, headaches, sweating, trembling) that disrupt school or activities, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T089","domain":"other","facet":"scared_social","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child avoids social situations due to fear of embarrassment or being judged, limiting participation, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T090","domain":"other","facet":"scared_school","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child avoids school (refusal, frequent 'sick' mornings) and it has created clear attendance or academic impact, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T091","domain":"other","facet":"scared_separation","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child has age-unusual distress about being away from you that interferes with school or activities, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T092","domain":"other","facet":"panic_surges","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child has sudden surges of fear with physical symptoms that disrupt functioning, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T093","domain":"other","facet":"sleep_chronic","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child has persistent sleep schedule problems that clearly worsen mornings and school functioning, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T094","domain":"other","facet":"learning_specific","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child struggles in one academic skill area despite effort and support, driving avoidance and frustration, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T095","domain":"other","facet":"bullying_driver","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child has ongoing bullying or peer conflict that is clearly affecting attention and performance, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T096","domain":"other","facet":"trauma_reactivity","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child after a stressful event, remains unusually reactive or avoidant in a way that disrupts daily functioning, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T097","domain":"other","facet":"irritability_general","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child is irritable across settings most days, causing repeated problems at home or school, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T098","domain":"other","facet":"somatic_stress","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child often has stress-linked stomachaches or headaches that disrupt attendance or performance, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T099","domain":"other","facet":"medical_hearing_vision","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child has a hearing/vision/medical factor that has clearly contributed to missed instructions or performance problems, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T100","domain":"other","facet":"substance_vaping","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child has nicotine/vaping or other substance use that has caused clear impairment or repeated serious consequences, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T101","domain":"digital","facet":"impaired_control","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child cannot stop gaming/short-video scrolling when they intend to stop, and this pattern persists, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T102","domain":"digital","facet":"priority","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child has online activity regularly take priority over homework, sleep, or in-person relationships despite consequences, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T103","domain":"digital","facet":"continue_harm","level":4,"text":"Over the past 6 months, compared with most kids the same age, your child continues heavy gaming/app use for months despite clear harm (sleep loss, grades, conflict), and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T104","domain":"digital","facet":"withdrawal","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child becomes intensely distressed when screens are limited, beyond typical disappointment, disrupting family routines, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T105","domain":"digital","facet":"tolerance","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child needs longer sessions or more intense content to feel satisfied, and impairment has increased, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T106","domain":"digital","facet":"deception","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child hides or lies about screen use and it has caused repeated serious conflict, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T107","domain":"digital","facet":"escape_mood","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child uses gaming/social apps mainly to escape negative mood, and it has become an impairing pattern, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T108","domain":"digital","facet":"night_use","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child has screen use repeatedly push bedtime later than intended and clearly worsen mornings and school functioning, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T109","domain":"digital","facet":"school_device","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child has device use during schoolwork repeatedly derail learning time or cause discipline (if devices are used), and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T110","domain":"digital","facet":"online_drama","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child has online messaging/drama repeatedly disrupt sleep or focus due to constant checking/responding, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T111","domain":"cope","facet":"parent_scaffold","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child functions mainly because you provide heavy structure (reminders, checking portals, supervising); without that support, schoolwork and routines fall apart, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T112","domain":"cope","facet":"teacher_accom","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child needs accommodations (extra time, seating, coaching) for baseline functioning; without them, performance drops sharply, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T113","domain":"cope","facet":"mask_crash","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child holds it together at school but regularly crashes at home (exhausted, irritable, shutdown) after school days, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T114","domain":"cope","facet":"parent_time","level":3,"text":"Over the past 6 months, compared with most kids the same age, your child requires far more parent time to manage homework and routines than parents of peers, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T115","domain":"cope","facet":"body_double","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child can only start or finish tasks when an adult stays nearby, and this dependence limits independence, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."},{"id":"T116","domain":"cope","facet":"weekend_catchup","level":2,"text":"Over the past 6 months, compared with most kids the same age, your child relies on weekend sleep catch-up because weekday routines routinely run too late, and it has clearly caused real-life problems (schoolwork, routines, friendships, or family conflict)."}];
+  const SOURCES = [
   {
-    "id": "Q001",
-    "domain": "adhd",
-    "facet": "inattention",
-    "level": 4,
-    "text": "Compared with most kids the same age, does your child often miss important details or make careless mistakes, and it has caused real problems at school or home?"
+    "name": "NICHQ Vanderbilt Assessment Scales (parent/teacher; symptoms + impairment)",
+    "url": "https://nichq.org/wp-content/uploads/2024/09/NICHQ-Vanderbilt-Assessment-Scales.pdf"
   },
   {
-    "id": "Q002",
-    "domain": "adhd",
-    "facet": "inattention",
-    "level": 4,
-    "text": "Does your child often have trouble staying focused during classwork, reading, or chores, and it has led to incomplete work or repeated reminders with consequences?"
+    "name": "Vanderbilt scoring instructions (impairment/performance emphasis)",
+    "url": "https://www.uwmedicine.org/sites/stevie/files/2019-11/sodbp_vanderbilt_scoringinstructions.pdf"
   },
   {
-    "id": "Q003",
-    "domain": "adhd",
-    "facet": "listening",
-    "level": 3,
-    "text": "When spoken to directly, does your child often seem not to hear or not take in what was said, and it has created repeated misunderstandings?"
+    "name": "SNAP-IV 26-item rating scale scoring guide",
+    "url": "https://adhdtreat.caddra.ca/wp-content/uploads/2025/01/SNAP-IV-26-%E2%80%93-Scoring-Guide.pdf"
   },
   {
-    "id": "Q004",
-    "domain": "adhd",
-    "facet": "follow_through",
-    "level": 4,
-    "text": "Does your child often start homework or chores but fail to finish without intensive supervision, and this has repeatedly caused conflict or penalties?"
-  },
-  {
-    "id": "Q005",
-    "domain": "adhd",
-    "facet": "organization",
-    "level": 4,
-    "text": "Does your child often struggle to organize school materials or multi-step tasks, and it has repeatedly resulted in missed deadlines or lost points?"
-  },
-  {
-    "id": "Q006",
-    "domain": "adhd",
-    "facet": "effort",
-    "level": 3,
-    "text": "Does your child often avoid or strongly resist tasks that require sustained mental effort, and it has caused real-life problems (grades, chores, or responsibilities)?"
-  },
-  {
-    "id": "Q007",
-    "domain": "adhd",
-    "facet": "forgetful",
-    "level": 4,
-    "text": "Does your child often forget daily responsibilities (turning in homework, bringing materials, following routines), and it has caused repeated negative outcomes?"
-  },
-  {
-    "id": "Q008",
-    "domain": "adhd",
-    "facet": "lose_things",
-    "level": 4,
-    "text": "Has your child lost or misplaced important items (phone, keys, school materials) more than once in the past 6 months, and it caused significant disruption?"
-  },
-  {
-    "id": "Q009",
-    "domain": "adhd",
-    "facet": "distractibility",
-    "level": 4,
-    "text": "Do small distractions (notifications, noises, brief interruptions) break your child’s focus so strongly that work cannot be completed like peers in the same setting?"
-  },
-  {
-    "id": "Q010",
-    "domain": "adhd",
-    "facet": "time",
-    "level": 4,
-    "text": "Does your child often underestimate how long tasks will take, leading to repeated lateness or last-minute crises with real consequences?"
-  },
-  {
-    "id": "Q011",
-    "domain": "adhd",
-    "facet": "initiation",
-    "level": 4,
-    "text": "Does your child repeatedly get stuck starting a necessary task (homework, studying, chores) for an hour or more, and it causes real-life problems?"
-  },
-  {
-    "id": "Q012",
-    "domain": "adhd",
-    "facet": "working_memory",
-    "level": 3,
-    "text": "If given 2–3 spoken instructions, does your child often forget one quickly, and it has led to repeated mistakes or conflict?"
-  },
-  {
-    "id": "Q013",
-    "domain": "adhd",
-    "facet": "switching",
-    "level": 3,
-    "text": "Does switching from one activity to another (school to home tasks, screen time to bedtime) often cause a shutdown or meltdown that disrupts the evening?"
-  },
-  {
-    "id": "Q014",
-    "domain": "adhd",
-    "facet": "planning",
-    "level": 3,
-    "text": "Does your child often need unusually heavy external structure (multiple reminders, step-by-step prompting) just to complete routine tasks, and problems still happen?"
-  },
-  {
-    "id": "Q015",
-    "domain": "adhd",
-    "facet": "hyperactivity",
-    "level": 3,
-    "text": "Does your child often fidget, tap, or squirm in a way that interferes with class, homework, or family activities despite reminders?"
-  },
-  {
-    "id": "Q016",
-    "domain": "adhd",
-    "facet": "hyperactivity",
-    "level": 3,
-    "text": "Does your child often leave their seat or move around when staying seated is expected, and it has caused repeated trouble or conflict?"
-  },
-  {
-    "id": "Q017",
-    "domain": "adhd",
-    "facet": "restless",
-    "level": 3,
-    "text": "Does your child often seem “driven by a motor” (constant motion) in a way that creates real problems with routines, school, or relationships?"
-  },
-  {
-    "id": "Q018",
-    "domain": "adhd",
-    "facet": "talkative",
-    "level": 2,
-    "text": "Does your child often talk excessively or at the wrong times, and it has caused repeated negative feedback from peers or adults?"
-  },
-  {
-    "id": "Q019",
-    "domain": "adhd",
-    "facet": "impulsivity",
-    "level": 4,
-    "text": "Does your child often blurt out answers, interrupt, or speak before thinking, and it has caused repeated social or school fallout?"
-  },
-  {
-    "id": "Q020",
-    "domain": "adhd",
-    "facet": "impulsivity",
-    "level": 3,
-    "text": "Does your child often have trouble waiting their turn (lines, games, conversations), and it has caused repeated conflicts?"
-  },
-  {
-    "id": "Q021",
-    "domain": "adhd",
-    "facet": "impulsivity",
-    "level": 3,
-    "text": "Does your child often intrude on others (butting into conversations or games), and it has repeatedly damaged peer relationships?"
-  },
-  {
-    "id": "Q022",
-    "domain": "adhd",
-    "facet": "emotion",
-    "level": 3,
-    "text": "Does your child’s frustration rise very fast (from mild to intense) compared with peers, leading to repeated problems at home or school?"
-  },
-  {
-    "id": "Q023",
-    "domain": "adhd",
-    "facet": "emotion",
-    "level": 3,
-    "text": "Do mood shifts during a day (excited to upset to angry) repeatedly disrupt schoolwork, routines, or relationships?"
-  },
-  {
-    "id": "Q024",
-    "domain": "adhd",
-    "facet": "persistence",
-    "level": 3,
-    "text": "Does your child frequently start new interests or projects enthusiastically but abandon them quickly, and it has caused real problems (wasted money, broken commitments)?"
-  },
-  {
-    "id": "Q025",
-    "domain": "adhd",
-    "facet": "prioritization",
-    "level": 3,
-    "text": "Does your child spend a lot of time on small details while urgent core work is ignored, and this has led to repeated negative outcomes?"
-  },
-  {
-    "id": "Q026",
-    "domain": "adhd",
-    "facet": "homework",
-    "level": 4,
-    "text": "Does your child frequently forget to turn in completed homework or submit assignments, and it has caused repeated grade impact?"
-  },
-  {
-    "id": "Q027",
-    "domain": "adhd",
-    "facet": "sustained",
-    "level": 3,
-    "text": "During conversations or instructions, does your child’s attention drift so much that key information is missed, creating repeated misunderstandings?"
-  },
-  {
-    "id": "Q028",
-    "domain": "adhd",
-    "facet": "hyperfocus",
-    "level": 3,
-    "text": "Does your child get so locked into one activity that they lose track of time and regularly miss meals, sleep, or responsibilities?"
-  },
-  {
-    "id": "Q029",
-    "domain": "adhd",
-    "facet": "sleep",
-    "level": 2,
-    "text": "Is bedtime repeatedly delayed because your child cannot disengage from tasks or screens, and it has created significant daytime problems?"
-  },
-  {
-    "id": "Q030",
-    "domain": "adhd",
-    "facet": "care",
-    "level": 2,
-    "text": "Does your child often forget basic self-care steps (hygiene, meals, packing essentials), and it has caused repeated negative outcomes?"
-  },
-  {
-    "id": "Q031",
-    "domain": "adhd",
-    "facet": "risk",
-    "level": 3,
-    "text": "Has your child repeatedly acted without thinking in a way that created real safety or rule problems (for example at school or with peers)?"
-  },
-  {
-    "id": "Q032",
-    "domain": "adhd",
-    "facet": "school",
-    "level": 4,
-    "text": "Do teachers report that your child needs much more prompting than peers to stay on task, and it has affected performance or behavior records?"
-  },
-  {
-    "id": "Q033",
-    "domain": "adhd",
-    "facet": "multi_step",
-    "level": 3,
-    "text": "When tasks have multiple steps (packing, cooking, projects), does your child often lose the sequence and it results in repeated failures or accidents?"
-  },
-  {
-    "id": "Q034",
-    "domain": "adhd",
-    "facet": "clutter",
-    "level": 2,
-    "text": "Is your child’s room, backpack, or digital workspace so cluttered that it repeatedly blocks daily functioning (finding things, completing tasks)?"
-  },
-  {
-    "id": "Q035",
-    "domain": "adhd",
-    "facet": "motivation",
-    "level": 3,
-    "text": "Does your child mostly begin work only under immediate pressure (deadlines or consequences), and it has caused repeated stress or problems?"
-  },
-  {
-    "id": "Q036",
-    "domain": "adhd",
-    "facet": "reading",
-    "level": 3,
-    "text": "Does your child often avoid longer reading or written tasks, and it has repeatedly harmed grades or learning progress?"
-  },
-  {
-    "id": "Q037",
-    "domain": "adhd",
-    "facet": "self_control",
-    "level": 3,
-    "text": "Does your child often struggle to stop an enjoyable activity when asked (games, chatting, hobbies), and it repeatedly causes conflict or missed responsibilities?"
-  },
-  {
-    "id": "Q038",
-    "domain": "adhd",
-    "facet": "notes",
-    "level": 2,
-    "text": "Does your child need frequent external reminders (alarms, checklists, repeated prompts) for routine obligations, and failures still occur with consequences?"
-  },
-  {
-    "id": "Q039",
-    "domain": "adhd",
-    "facet": "social",
-    "level": 2,
-    "text": "Do friendships suffer because your child forgets to reply, follow plans, or keep up contact, and it has caused real relationship loss?"
-  },
-  {
-    "id": "Q040",
-    "domain": "adhd",
-    "facet": "sports",
-    "level": 2,
-    "text": "In sports or group activities, does your child often miss plays or instructions due to drifting attention, and it has caused repeated problems?"
-  },
-  {
-    "id": "Q041",
-    "domain": "autism",
-    "facet": "social_cues",
-    "level": 4,
-    "text": "Does your child often miss hints, indirect requests, or sarcasm, and it has repeatedly caused misunderstandings with peers or adults?"
-  },
-  {
-    "id": "Q042",
-    "domain": "autism",
-    "facet": "conversation",
-    "level": 3,
-    "text": "Is back-and-forth conversation unusually hard for your child (timing, reciprocity), and it has limited friendships or school participation?"
-  },
-  {
-    "id": "Q043",
-    "domain": "autism",
-    "facet": "nonverbal",
-    "level": 3,
-    "text": "Does your child often struggle to read facial expressions, tone, or body language, causing repeated social confusion or conflict?"
-  },
-  {
-    "id": "Q044",
-    "domain": "autism",
-    "facet": "peer",
-    "level": 3,
-    "text": "Does your child have ongoing difficulty making or keeping same-age friends, and it has caused significant distress or isolation?"
-  },
-  {
-    "id": "Q045",
-    "domain": "autism",
-    "facet": "sensory",
-    "level": 4,
-    "text": "Do common sensory inputs (noise, bright lights, clothing textures) overwhelm your child enough to trigger shutdown, escape, or strong distress?"
-  },
-  {
-    "id": "Q046",
-    "domain": "autism",
-    "facet": "change",
-    "level": 4,
-    "text": "Do unexpected changes to plans or routines cause disproportionate distress that disrupts the day more than for most peers?"
-  },
-  {
-    "id": "Q047",
-    "domain": "autism",
-    "facet": "interests",
-    "level": 3,
-    "text": "Does your child have very intense interests that dominate time and conversations, and it has repeatedly crowded out responsibilities or relationships?"
-  },
-  {
-    "id": "Q048",
-    "domain": "autism",
-    "facet": "literal",
-    "level": 2,
-    "text": "Does your child often interpret language very literally and miss implied meaning, leading to repeated confusion in real situations?"
-  },
-  {
-    "id": "Q049",
-    "domain": "autism",
-    "facet": "group",
-    "level": 2,
-    "text": "In group settings, does your child often struggle to join smoothly (knowing when to speak or what to do), and it has affected peer belonging?"
-  },
-  {
-    "id": "Q050",
-    "domain": "autism",
-    "facet": "shutdown",
-    "level": 3,
-    "text": "After social time, does your child often need long recovery (exhausted, irritable, withdrawn) that repeatedly disrupts evenings or weekends?"
-  },
-  {
-    "id": "Q051",
-    "domain": "autism",
-    "facet": "special_rules",
-    "level": 2,
-    "text": "Does your child insist on very specific rules or rituals that repeatedly cause conflict or delays in daily life?"
-  },
-  {
-    "id": "Q052",
-    "domain": "autism",
-    "facet": "sensory_food",
-    "level": 2,
-    "text": "Does your child have strong food texture or taste sensitivities that create recurring problems with meals or family routines?"
-  },
-  {
-    "id": "Q053",
-    "domain": "autism",
-    "facet": "eye_contact",
-    "level": 2,
-    "text": "Does your child consistently avoid eye contact or use it in an unusual way, and it has led to repeated social misunderstandings?"
-  },
-  {
-    "id": "Q054",
-    "domain": "autism",
-    "facet": "humor",
-    "level": 2,
-    "text": "Does your child often struggle with jokes, playful teasing, or figurative language, and it has repeatedly caused social friction?"
-  },
-  {
-    "id": "Q055",
-    "domain": "autism",
-    "facet": "rigidity",
-    "level": 3,
-    "text": "When a preferred plan cannot happen, does your child have a strong reaction that is hard to recover from and disrupts functioning?"
-  },
-  {
-    "id": "Q056",
-    "domain": "other",
-    "facet": "mood",
-    "level": 4,
-    "text": "Over the past 2 weeks, has your child often had very low interest or enjoyment in activities, and it clearly interfered with daily functioning?"
-  },
-  {
-    "id": "Q057",
-    "domain": "other",
-    "facet": "mood",
-    "level": 4,
-    "text": "Over the past 2 weeks, has your child often seemed down or hopeless, and it clearly affected schoolwork, sleep, or relationships?"
-  },
-  {
-    "id": "Q058",
-    "domain": "other",
-    "facet": "anxiety",
-    "level": 4,
-    "text": "Over the past 2 weeks, has your child often been nervous or on edge, and it clearly impaired focus or participation?"
-  },
-  {
-    "id": "Q059",
-    "domain": "other",
-    "facet": "anxiety",
-    "level": 4,
-    "text": "Over the past 2 weeks, has your child often been unable to stop worrying, and it clearly affected sleep, school, or daily routines?"
-  },
-  {
-    "id": "Q060",
-    "domain": "other",
-    "facet": "sleep",
-    "level": 3,
-    "text": "Does your child often get insufficient or poor-quality sleep (not just occasional), and it has clearly caused daytime problems?"
-  },
-  {
-    "id": "Q061",
-    "domain": "other",
-    "facet": "stress",
-    "level": 3,
-    "text": "Does your child frequently report stomachaches, headaches, or physical complaints linked to school stress, and it has disrupted attendance or performance?"
-  },
-  {
-    "id": "Q062",
-    "domain": "other",
-    "facet": "irritability",
-    "level": 3,
-    "text": "Is your child frequently irritable or easily angered across many situations, and it has caused repeated problems with family or school?"
-  },
-  {
-    "id": "Q063",
-    "domain": "digital",
-    "facet": "control",
-    "level": 4,
-    "text": "Does your child repeatedly fail to stop short-video feeds or social scrolling when asked or when they intend to stop, and it causes clear harm (sleep loss, missed work, conflict)?"
-  },
-  {
-    "id": "Q064",
-    "domain": "digital",
-    "facet": "control",
-    "level": 4,
-    "text": "Does gaming or online activity regularly take priority over responsibilities or relationships even after consequences, and the pattern persists?"
-  },
-  {
-    "id": "Q065",
-    "domain": "digital",
-    "facet": "cut_down",
-    "level": 3,
-    "text": "Have you and your child tried to reduce gaming or app time multiple times and it did not stick, with ongoing meaningful impairment?"
-  },
-  {
-    "id": "Q066",
-    "domain": "digital",
-    "facet": "sleep",
-    "level": 3,
-    "text": "Does screen use repeatedly push bedtime later than intended, and it clearly worsens morning functioning and school performance?"
-  },
-  {
-    "id": "Q067",
-    "domain": "digital",
-    "facet": "withdrawal",
-    "level": 2,
-    "text": "When screens are removed, does your child often become intensely distressed beyond what is typical, and it repeatedly disrupts family routines?"
-  },
-  {
-    "id": "Q068",
-    "domain": "digital",
-    "facet": "focus",
-    "level": 2,
-    "text": "Does your child often abandon non-screen activities quickly for screens, and it has reduced engagement in school, hobbies, or friendships?"
-  },
-  {
-    "id": "Q069",
-    "domain": "cope",
-    "facet": "structure",
-    "level": 3,
-    "text": "Does your child function “okay” mainly because you provide heavy structure (constant reminders, checks, supervision), and without it things slip noticeably?"
-  },
-  {
-    "id": "Q070",
-    "domain": "cope",
-    "facet": "masking",
-    "level": 2,
-    "text": "Does your child hold it together at school but then crashes at home (exhausted, irritable, shutdown) often enough to disrupt evenings?"
-  }
-];
-    const SOURCES = [
-  {
-    "name": "NICHQ Vanderbilt ADHD Scales (scoring instructions)",
-    "url": "https://nichq.org/wp-content/uploads/2024/09/07Scoring-Instructions.pdf"
-  },
-  {
-    "name": "SNAP-IV 26 Parent/Teacher scale (OHSU PDF)",
-    "url": "https://www.ohsu.edu/sites/default/files/2022-01/SNAP_ADHD_Rating_Scale.pdf"
-  },
-  {
-    "name": "UCSF CAP Portal: screening tools list",
-    "url": "https://capp.ucsf.edu/content/screening-tools"
-  },
-  {
-    "name": "ASSQ (example PDF)",
+    "name": "ASSQ (ages 6–17) screening questionnaire PDF",
     "url": "https://mc3michigan.org/wp-content/uploads/2024/08/ASSQ-v2-ages-6-17.pdf"
   },
   {
-    "name": "AAP: screening tools overview",
-    "url": "https://www.aap.org/en/patient-care/mental-health-minute/screening-tools/"
+    "name": "SCARED Parent Version (anxiety domains incl. school avoidance)",
+    "url": "https://www.aacap.org/App_Themes/AACAP/docs/member_resources/toolbox_for_clinical_practice_and_outcomes/symptoms/ScaredParent.pdf"
   },
   {
-    "name": "WHO ICD-11 FAQ: Gaming disorder",
+    "name": "PHQ-9 Modified for Teens (GLAD-PC / AACAP)",
+    "url": "https://www.aacap.org/App_Themes/AACAP/docs/member_resources/toolbox_for_clinical_practice_and_outcomes/symptoms/GLAD-PC_PHQ-9.pdf"
+  },
+  {
+    "name": "Strengths and Difficulties Questionnaire (SDQ) parent 11-17 PDF",
+    "url": "https://depts.washington.edu/dbpeds/Screening%20Tools/Strengths_and_Difficulties_Questionnaire.pdf"
+  },
+  {
+    "name": "WHO ICD-11: Gaming disorder FAQ (impaired control, priority, continuation despite harm)",
     "url": "https://www.who.int/standards/classifications/frequently-asked-questions/gaming-disorder"
+  },
+  {
+    "name": "American Psychiatric Association: Internet Gaming Disorder overview",
+    "url": "https://www.psychiatry.org/patients-families/internet-gaming"
   }
 ];
 
-    const STORE_KEY = "brainQuest_parent_desktop_v1";
+    const STORE_KEY = "brainQuest_parent_desktop_v2_teen_qbank";
     const STAGES = 5;
     const PER_STAGE = 6;
     const TOTAL_MAIN = STAGES * PER_STAGE;
@@ -1010,7 +574,6 @@
       { pill:"Moonlight",   name:"Gentle Finish" },
     ];
 
-    const DOMAINS = ["adhd","autism","other","digital","cope"];
     const el = (id)=>document.getElementById(id);
 
     const qList = el("qList");
@@ -1060,12 +623,12 @@
       for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
       return a;
     }
-    function pulse(btn){ btn.classList.remove("pulse"); void btn.offsetWidth; btn.classList.add("pulse"); setTimeout(()=>btn.classList.remove("pulse"), 160); }
     function showToast(msg){ toast.textContent = msg; toast.classList.add("show"); clearTimeout(showToast._t); showToast._t=setTimeout(()=>toast.classList.remove("show"), 900); }
     function saveRun(){ try{ sessionStorage.setItem(STORE_KEY, JSON.stringify(run)); }catch(e){} }
     function loadRun(){ try{ const raw=sessionStorage.getItem(STORE_KEY); return raw?JSON.parse(raw):null; }catch(e){ return null; } }
     function clearRun(){ try{ sessionStorage.removeItem(STORE_KEY); }catch(e){} }
 
+    // ---- Audio (soft) ----
     let audioEnabled=false, audioReady=false;
     let ctx=null, master=null, musicBus=null, sfxBus=null;
     let musicNodes=[], musicTimer=null;
@@ -1178,9 +741,10 @@
         if(audioEnabled) startMusicForStage(run.stage || 0);
         else stopMusic();
       }
-      sfxTap();
+      if(audioEnabled) sfxTap();
     });
 
+    // ---- Confetti ----
     const fx=document.getElementById("fx");
     const fxc=fx.getContext("2d");
     let confetti=[];
@@ -1212,6 +776,7 @@
     }
     tickFx();
 
+    // ---- Adaptive selection ----
     function domainCounts(answers){
       const out={};
       for(const d of ["adhd","autism","other","digital","cope"]) out[d]={yes:0, asked:0};
@@ -1242,7 +807,7 @@
       return s;
     }
 
-    function pickStageQuestions(stageIdx){
+    function pickStageQuestions(){
       const remaining = run.pool.filter(id => run.answers[id] === undefined);
       const counts = domainCounts(run.answers);
       const rates = {};
@@ -1259,10 +824,10 @@
           .filter(q=>q && q.domain===dom && !picked.includes(q.id));
         if(!candidates.length) return null;
         candidates.sort((a,b)=>scoreCandidate(b,counts,primary,usedFacets)-scoreCandidate(a,counts,primary,usedFacets));
-        const q=candidates[0];
-        picked.push(q.id);
-        usedFacets.add(q.facet);
-        return q.id;
+        const qq=candidates[0];
+        picked.push(qq.id);
+        usedFacets.add(qq.facet);
+        return qq.id;
       }
 
       for(const d of targets){
@@ -1279,12 +844,13 @@
       return picked.slice(0, PER_STAGE);
     }
 
+    // ---- Run state ----
     let run = null;
 
     function makeNewRun(){
       const ids = shuffle(BANK.map(q=>q.id));
       return {
-        v: 1,
+        v: 2,
         createdAt: Date.now(),
         pool: ids,
         stage: 0,
@@ -1312,6 +878,57 @@
       stageLabel.textContent = `Chapter ${stageIdx+1}/${STAGES}`;
     }
 
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    // ---- Choice handling ----
+    function bindChoice(btn, qid, val){
+      let tracking=false;
+      let canceled=false;
+      let startX=0, startY=0;
+      let pid=null;
+
+      btn.addEventListener("pointerdown", (e)=>{
+        if(e.button !== undefined && e.button !== 0) return;
+        tracking=true; canceled=false; pid=e.pointerId;
+        startX=e.clientX; startY=e.clientY;
+        btn.classList.add("pressed");
+        try{ btn.setPointerCapture(pid); }catch(_){}
+        e.preventDefault();
+      }, {passive:false});
+
+      btn.addEventListener("pointermove", (e)=>{
+        if(!tracking || e.pointerId!==pid) return;
+        const dx=e.clientX-startX, dy=e.clientY-startY;
+        if(Math.hypot(dx,dy) > 12){
+          canceled=true;
+          btn.classList.remove("pressed");
+        }
+      });
+
+      const end = (e)=>{
+        if(!tracking || e.pointerId!==pid) return;
+        tracking=false;
+        btn.classList.remove("pressed");
+        const rect = btn.getBoundingClientRect();
+        const inside = e.clientX>=rect.left && e.clientX<=rect.right && e.clientY>=rect.top && e.clientY<=rect.bottom;
+        if(!canceled && inside){
+          if(audioEnabled) sfxTap();
+          setAnswer(qid, val);
+        }
+      };
+
+      btn.addEventListener("pointerup", end);
+      btn.addEventListener("pointercancel", ()=>{ tracking=false; canceled=true; btn.classList.remove("pressed"); });
+      btn.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); });
+    }
+
     function renderStage(){
       results.classList.remove("show");
       dock.style.display="";
@@ -1320,7 +937,7 @@
 
       setTheme(run.stage);
 
-      if(!run.stageOrder[run.stage]) run.stageOrder[run.stage]=pickStageQuestions(run.stage);
+      if(!run.stageOrder[run.stage]) run.stageOrder[run.stage]=pickStageQuestions();
 
       stageTotal.textContent = String(PER_STAGE);
 
@@ -1332,25 +949,28 @@
         row.className="qRow";
 
         const left=document.createElement("div");
-        left.innerHTML = `<div class="qText">${escapeHtml(q.text)}</div><div class="qMeta">Answer based on clear impairment, not “maybe”.</div>`;
+        const cur = run.answers[qid];
+        const meta = (cur===true) ? "Selected: YES" : (cur===false) ? "Selected: NO" : "Not answered yet. Only tap/click inside YES or NO.";
+        left.innerHTML = `<div class="qText">${escapeHtml(q.text)}</div><div class="qMeta">${meta}</div>`;
 
         const toggle=document.createElement("div");
         toggle.className="toggle";
 
         const yes=document.createElement("button");
         yes.className="tbtn tbtnYes";
+        yes.type="button";
         yes.textContent="YES";
 
         const no=document.createElement("button");
         no.className="tbtn tbtnNo";
+        no.type="button";
         no.textContent="NO";
 
-        const val = run.answers[qid];
-        if(val===true) yes.classList.add("activeYes");
-        if(val===false) no.classList.add("activeNo");
+        if(cur===true) yes.classList.add("activeYes");
+        if(cur===false) no.classList.add("activeNo");
 
-        yes.addEventListener("click", ()=>setAnswer(qid, true, yes));
-        no.addEventListener("click", ()=>setAnswer(qid, false, no));
+        bindChoice(yes, qid, true);
+        bindChoice(no, qid, false);
 
         toggle.appendChild(yes);
         toggle.appendChild(no);
@@ -1380,10 +1000,8 @@
       nextBtn.textContent = (run.stage===STAGES-1) ? "Finish" : "Next chapter";
     }
 
-    function setAnswer(qid, val, btn){
+    function setAnswer(qid, val){
       run.answers[qid]=val;
-      pulse(btn);
-      if(audioEnabled) sfxTap();
       addXP(val ? 22 : 16);
       saveRun();
       showToast("Saved");
@@ -1435,6 +1053,7 @@
       if(audioEnabled) sfxTap();
     }
 
+    // ---- Results ----
     function clamp01(x){ return Math.max(0, Math.min(1, x)); }
     function segmentPct(yes, asked){ return clamp01(asked ? yes/asked : 0); }
     function labelPrimary(k){
@@ -1445,12 +1064,24 @@
       return "no strong signal";
     }
     function actionPrimary(k){
-      if(k==="adhd") return "Next step: ask for teacher input and consider a pediatric ADHD evaluation if this pattern is long-standing and shows up in multiple settings.";
+      if(k==="adhd") return "Next step: get teacher input and consider an ADHD-focused evaluation if this pattern shows up across settings for months.";
       if(k==="autism") return "Next step: consider an autism-informed evaluation if these social-sensory patterns have been present for years and affect daily life.";
-      if(k==="other") return "Next step: prioritize sleep, stress, and anxiety/depression screening; attention often improves when these drivers are treated.";
-      if(k==="digital") return "Next step: set firm bedtime protection and screen-time boundaries for 14 days, then re-check whether attention and mood rebound.";
-      return "Next step: keep supportive routines; re-check only if clear impairment increases.";
+      if(k==="other") return "Next step: prioritize sleep and anxiety/depression screening; attention often improves when these drivers are treated.";
+      if(k==="digital") return "Next step: protect sleep first (bedtime + device rules for 14 days), then reassess attention and mood.";
+      return "Next step: keep supportive routines; reassess only if impairment increases.";
     }
+    function domainCounts(answers){
+      const out={};
+      for(const d of ["adhd","autism","other","digital","cope"]) out[d]={yes:0, asked:0};
+      for(const [qid,val] of Object.entries(answers)){
+        const q=BANK_BY_ID[qid]; if(!q) continue;
+        out[q.domain]=out[q.domain]||{yes:0,asked:0};
+        out[q.domain].asked += 1;
+        if(val===true) out[q.domain].yes += 1;
+      }
+      return out;
+    }
+    function rate(yes, asked){ return (yes+1)/(asked+2); }
     function overview3(answers){
       const counts=domainCounts(answers);
       const totalYes = Object.values(answers).filter(v=>v===true).length;
@@ -1465,30 +1096,30 @@
       const [primaryK] = sorted[0];
       const lowSignal = totalYes <= 3;
 
-      const s1 = `Primary finding: ${lowSignal ? "low overall signal, with a slight tilt toward " + labelPrimary(primaryK) : labelPrimary(primaryK)}.`;
-      const s2 = `Evidence: ${totalYes} total Yes out of ${TOTAL_MAIN}. ADHD ${counts.adhd.yes}/${counts.adhd.asked}, Autism ${counts.autism.yes}/${counts.autism.asked}, Mood/Anxiety ${counts.other.yes}/${counts.other.asked}, Digital ${counts.digital.yes}/${counts.digital.asked}.`;
+      const s1 = `Primary finding: ${lowSignal ? "low overall strict-impairment signal, with a slight tilt toward " + labelPrimary(primaryK) : labelPrimary(primaryK)}.`;
+      const s2 = `Evidence: ${totalYes} total Yes out of ${TOTAL_MAIN}. ADHD ${counts.adhd.yes}/${counts.adhd.asked}, Social-sensory ${counts.autism.yes}/${counts.autism.asked}, Mood/Anxiety ${counts.other.yes}/${counts.other.asked}, Digital ${counts.digital.yes}/${counts.digital.asked}.`;
       const s3 = actionPrimary(primaryK);
       return [s1,s2,s3, primaryK];
     }
     function domainNarrative(domainKey, yes, asked){
       const p=segmentPct(yes, asked);
       if(domainKey==="adhd"){
-        if(p < 0.18) return "Low strict impairment signal on attention/executive items.";
+        if(p < 0.18) return "Low strict impairment signal on attention/executive items in this run.";
         if(p < 0.40) return "Moderate signal; daily school/home friction is typically noticeable.";
         return "High signal; impairment-level attention/executive friction is strongly represented.";
       }
       if(domainKey==="autism"){
-        if(p < 0.18) return "Low signal on social-cue + sensory/change items.";
+        if(p < 0.18) return "Low signal on social-cue + sensory/change items in this run.";
         if(p < 0.40) return "Moderate signal; consistent social-sensory patterns stand out.";
         return "High signal; many items point to consistent social-sensory differences.";
       }
       if(domainKey==="other"){
-        if(p < 0.18) return "Low recent mood/anxiety signal on these items.";
+        if(p < 0.18) return "Low recent mood/anxiety signal on the included items.";
         if(p < 0.40) return "Moderate recent mood/anxiety signal; this can strongly affect attention and energy.";
         return "High recent mood/anxiety signal; addressing this often changes attention quickly.";
       }
       if(domainKey==="digital"){
-        if(p < 0.18) return "Low digital loss-of-control signal.";
+        if(p < 0.18) return "Low digital loss-of-control signal in this run.";
         if(p < 0.40) return "Mild signal; digital habits may still affect sleep and focus.";
         return "Elevated signal; digital loss-of-control is likely contributing to attention and recovery time.";
       }
@@ -1547,15 +1178,6 @@
       showToast("Report ready");
     }
 
-    function escapeHtml(str){
-      return String(str)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
     nextBtn.addEventListener("click", ()=>{
       if(!isStageComplete()) return;
       if(audioEnabled) sfxTap();
@@ -1605,7 +1227,7 @@
 
     (function boot(){
       const saved = loadRun();
-      if(saved && saved.v===1 && saved.pool && saved.answers){
+      if(saved && saved.v===2 && saved.pool && saved.answers){
         run = saved;
       } else {
         run = makeNewRun();
